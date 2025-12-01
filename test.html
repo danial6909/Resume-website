@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="fa" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ورود | صفحه لاگین زیبا</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #000;
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* پس‌زمینه ذرات */
+    #particles-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    /* روشنایی ملایم مرکزی */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.3), #000);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* کانتینر فرم */
+    .form-container {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 400px;
+      background: #000;
+      background-clip: padding-box, border-box;
+      background-origin: padding-box, border-box;
+      background-image: 
+        linear-gradient(#000, #000),
+        linear-gradient(145deg, transparent 35%, #e81cff, #40c9ff);
+      border: 2px solid transparent;
+      border-radius: 16px;
+      padding: 32px 24px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin: 0 auto;
+      margin-top: 8vh;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .form-title {
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin-bottom: 8px;
+    }
+
+    .form-divider {
+      height: 2px;
+      width: 40px;
+      background: linear-gradient(to right, #e81cff, #40c9ff);
+      margin: 8px auto;
+      border-radius: 1px;
+    }
+
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #717171;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: rgba(30, 30, 30, 0.6);
+      border: 1px solid #414141;
+      color: white;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+      border-color: #e81cff;
+      box-shadow: 0 0 0 2px rgba(232, 28, 255, 0.2);
+    }
+
+    .form-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .remember {
+      display: flex;
+      align-items: center;
+      color: #717171;
+      cursor: pointer;
+    }
+
+    .remember input {
+      margin-right: 6px;
+      accent-color: #e81cff;
+    }
+
+    .forgot {
+      color: #40c9ff;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .forgot:hover {
+      color: #64ffda;
+      text-decoration: underline;
+    }
+
+    .form-submit-btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #1a1a1a;
+      color: #ccc;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .form-submit-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(100, 255, 218, 0.2), transparent);
+      transition: left 0.6s;
+    }
+
+    .form-submit-btn:hover {
+      background: linear-gradient(145deg, #2d003a, #002d3a);
+      color: white;
+      box-shadow: 0 0 12px rgba(100, 255, 218, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .form-submit-btn:hover::before {
+      left: 100%;
+    }
+
+    .form-submit-btn:active {
+      transform: scale(0.96) translateY(0);
+      box-shadow: 0 0 8px rgba(232, 28, 255, 0.6);
+    }
+
+    .form-submit-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .signup-text {
+      text-align: center;
+      font-size: 13px;
+      color: #555;
+      margin-top: 16px;
+    }
+
+    .signup-text a {
+      color: #40c9ff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .signup-text a:hover {
+      text-decoration: underline;
+    }
+
+    /* انیمیشن برای دکمه وقتی فعاله */
+    @keyframes buttonPress {
+      0% { transform: scale(1); }
+      50% { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+
+    .form-submit-btn:active:not(:disabled) {
+      animation: buttonPress 0.2s ease-out;
+    }
+
+    /* ریسپانسیو */
+    @media (max-width: 480px) {
+      .form-container {
+        margin-top: 4vh;
+        padding: 24px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Canvas برای ذرات -->
+  <canvas id="particles-canvas"></canvas>
+  <div class="overlay"></div>
+
+  <div class="form-container">
+    <h1 class="form-title">Welcome Back</h1>
+    <div class="form-divider"></div>
+
+    <form class="form" id="loginForm">
+      <div class="form-group">
+        <label for="email" class="form-label">Company Email</label>
+        <input
+          type="email"
+          id="email"
+          class="form-input"
+          placeholder="you@company.com"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Password</label>
+        <input
+          type="password"
+          id="password"
+          class="form-input"
+          placeholder="••••••••"
+          required
+        />
+      </div>
+
+      <div class="form-row">
+        <label class="remember">
+          <input type="checkbox" />
+          Remember me
+        </label>
+        <a href="#" class="forgot">Forgot password?</a>
+      </div>
+
+      <button type="submit" class="form-submit-btn" id="loginBtn">
+        Sign In
+      </button>
+    </form>
+
+    <p class="signup-text">
+      Don’t have an account? <a href="#">Sign up</a>
+    </p>
+  </div>
+
+  <script>
+    // ✨ ذرات سبک (Pure JS + Canvas)
+    (function() {
+      const canvas = document.getElementById('particles-canvas');
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+      let animationId;
+
+      function setCanvasSize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.size = Math.random() * 3 + 1;
+          this.speedX = Math.random() * 1 - 0.5;
+          this.speedY = Math.random() * 1 - 0.5;
+          this.color = ['#e81cff', '#40c9ff', '#64ffda'][Math.floor(Math.random() * 3)];
+        }
+
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+
+          if (this.x > canvas.width || this.x < 0) this.speedX = -this.speedX;
+          if (this.y > canvas.height || this.y < 0) this.speedY = -this.speedY;
+        }
+
+        draw() {
+          ctx.fillStyle = this.color;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      function init() {
+        particles = [];
+        const particleCount = Math.min(80, Math.floor(window.innerWidth * window.innerHeight / 3000));
+        for (let i = 0; i < particleCount; i++) {
+          particles.push(new Particle());
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // خطوط بین ذرات نزدیک
+        for (let i = 0; i < particles.length; i++) {
+          particles[i].update();
+          particles[i].draw();
+
+          for (let j = i; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < 100) {
+              ctx.beginPath();
+              ctx.strokeStyle = `rgba(100, 255, 218, ${0.1 - distance / 1000})`;
+              ctx.lineWidth = 0.5;
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+
+        animationId = requestAnimationFrame(animate);
+      }
+
+      setCanvasSize();
+      init();
+      animate();
+
+      window.addEventListener('resize', () => {
+        setCanvasSize();
+        init();
+      });
+
+      // تعامل با موس (repulse)
+      canvas.addEventListener('mousemove', (e) => {
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+        particles.forEach(p => {
+          const dx = p.x - mouseX;
+          const dy = p.y - mouseY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < 100) {
+            p.speedX += dx * 0.01;
+            p.speedY += dy * 0.01;
+          }
+        });
+      });
+
+      canvas.addEventListener('click', (e) => {
+        for (let i = 0; i < 5; i++) {
+          setTimeout(() => {
+            particles.push(new Particle());
+            particles[particles.length - 1].x = e.clientX;
+            particles[particles.length - 1].y = e.clientY;
+            particles[particles.length - 1].speedX = (Math.random() - 0.5) * 3;
+            particles[particles.length - 1].speedY = (Math.random() - 0.5) * 3;
+          }, i * 100);
+        }
+      });
+    })();
+
+    // فرم
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+
+      // شبیه‌سازی API call
+      setTimeout(() => {
+        alert('✅ ورود موفقیت‌آمیز بود! (در واقعیت، به داشبورد هدایت می‌شد)');
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+      }, 1200);
+    });
+  </script>
+</body>
+</html>
