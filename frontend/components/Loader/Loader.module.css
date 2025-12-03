@@ -1,41 +1,25 @@
-/* components/common/DotSpinner.module.css */
-
-/* 1. Container اصلی: برای قرار دادن لودر در مرکز */
-.spinnerContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
-
-/* 2. استایل هر نقطه (Dot) */
-.dot {
-  width: 12px;
-  height: 12px;
-  background-color: #3f51b5; /* رنگ آبی زیبا */
-  border-radius: 50%;
-  margin: 0 5px; /* فاصله بین نقاط */
-  animation: bounce 1.4s infinite ease-in-out both; /* اعمال انیمیشن */
-}
-
-/* 3. ایجاد تأخیر در انیمیشن */
-/* این مهم است تا نقاط همزمان حرکت نکنند و جلوه موجی ایجاد شود */
-.dot:nth-child(1) {
-  animation-delay: -0.32s; /* شروع زودتر */
-}
-
-.dot:nth-child(2) {
-  animation-delay: -0.16s;
-}
-
-/* 4. تعریف Keyframes انیمیشن */
-@keyframes bounce {
-  0%, 80%, 100% {
-    /* در شروع و پایان انیمیشن، اندازه به حالت عادی برمی‌گردد */
-    transform: scale(0); 
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
   }
-  40% {
-    /* در میانه انیمیشن، اندازه بزرگ می‌شود (بالا می‌آید) */
-    transform: scale(1);
+  to {
+    transform: rotate(360deg);
   }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 2.5s linear infinite;
 }
