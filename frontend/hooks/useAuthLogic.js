@@ -11,22 +11,22 @@ export function useAuthLogic() {
 
     const login = useCallback(async (email, password) => {
         setLoading(true);
-        // try {
-        //     const response = await axiosInstance.post('/auth/login', { email, password });
-        //     setUser(response.data.user);
-        //     navigate('/Home');
-        // } catch (error) {
-        //     console.error('Login failed:', error);
-        //     alert('Login failed. Please check your credentials.');
-        // } finally {
-        //     setLoading(false);
-        // }
-         const timer = setTimeout(() => {
+        try {
+            const response = await axiosInstance.post('/testapi', { email, password });
+            setUser(response.data.user);
+            navigate('/Home');
+        } catch (error) {
+            console.error('Login failed:', error);
+            alert('Login failed. Please check your credentials.');
+        } finally {
+            setLoading(false);
+        }
+    //      const timer = setTimeout(() => {
       
-             console.log( "salam nokaram" ,email , password)
-      // کد مورد نظر شما اینجا اجرا می‌شود
+    //          console.log( "salam nokaram" ,email , password)
+    //   // کد مورد نظر شما اینجا اجرا می‌شود
       setLoading(false);
-    }, 5000); // ۲۰۰۰ میلی‌ثانیه = ۲ ثانیه
+    // }, 5000); // ۲۰۰۰ میلی‌ثانیه = ۲ ثانیه
 
     }, );
 
