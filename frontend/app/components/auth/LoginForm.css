@@ -1,0 +1,65 @@
+/* app/components/auth/LoginForm.css */
+
+/* --------------------------------- */
+/* KEYFRAMES & UTILITIES */
+/* --------------------------------- */
+@keyframes buttonPress {
+    0% { transform: scale(1) translateY(0); }
+    50% { transform: scale(0.96) translateY(0); }
+    100% { transform: scale(1) translateY(0); }
+}
+
+.active-animate-buttonPress:active:not(:disabled) {
+    animation: buttonPress 0.2s ease-out;
+}
+
+/* --------------------------------- */
+/* FORM CONTAINER - GRADIENT BORDER */
+/* --------------------------------- */
+.form-container-custom {
+    margin-top: 8vh;
+    padding: 32px;
+    background-clip: padding-box, border-box;
+    background-origin: padding-box, border-box;
+    /* پیاده‌سازی گرادیان به عنوان حاشیه */
+    background-image: 
+        linear-gradient(#000, #000), 
+        linear-gradient(145deg, transparent 35%, #e81cff, #40c9ff); 
+    border: 2px solid transparent; 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+@media (max-width: 480px) {
+    .form-container-custom {
+        margin-top: 4vh;
+        padding: 24px 16px;
+    }
+}
+
+
+/* --------------------------------- */
+/* SUBMIT BUTTON - SWEEP EFFECT */
+/* --------------------------------- */
+.form-submit-btn-custom {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease-in-out; 
+}
+
+/* لایه Sweep Effect */
+.form-submit-btn-custom::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(100, 255, 218, 0.2), transparent);
+    transition: left 0.6s;
+    pointer-events: none; 
+}
+
+.form-submit-btn-custom:hover::before {
+    left: 100%;
+}
