@@ -1,4 +1,5 @@
-import os.path
+import os
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -29,6 +30,7 @@ INSTALLED_APPS = [
     # MY APP
     'account.apps.AccountConfig',
     'rest_framework',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -114,3 +116,31 @@ MEDIA_URL = 'media/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'account.User'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
+    'ROTATE_REFRESH_TOKENS': True,
+    'ALGORITHM': 'RS256',
+    'SIGNING_KEY': SECRET_KEY,
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE' : 'Your Project API',
+    'DESCRIPTION' : 'Your Project Description',
+    'VERSION' : '1.0.0',
+    'SERVE_INCLUDE_SCHEMA' : False,
+    'COMPONENT_SPLIT_REQUEST' : True,
+}
