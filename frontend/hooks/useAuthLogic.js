@@ -12,7 +12,7 @@ export function useAuthLogic() {
     const login = useCallback(async (email, password) => {
         setLoading(true);
         try {
-            const response = await axiosInstance.post('/testapi', { email, password });
+            const response = await axiosInstance.post('/testapi/', { email, password });
             setUser(response.data.user);
             navigate('/Home');
         } catch (error) {
