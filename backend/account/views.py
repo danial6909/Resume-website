@@ -1,16 +1,17 @@
 from django.http import HttpResponse
-from django.shortcuts import render
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
+from rest_framework.generics import CreateAPIView
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
+from backend.account.serializers import UserRegisterSerializer
+from .models import CustomUser
 
 
 
-class RegisterAPIView(APIView):
-    def post(self, request):
-        pass
 
-
+class RegisterAPIView(CreateAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = UserRegisterSerializer
+    queryset = CustomUser.objects.all()
 
 
 class ExampleAPIView(APIView):
