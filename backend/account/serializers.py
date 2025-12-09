@@ -3,6 +3,18 @@ from .models import CustomUser
 
 
 
+class CustomUserSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(max_length=None, use_url=True)
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'image', 'email', 'username', 'full_name', 'password']
+        read_only_fields = ['id', 'password']
+
+    def get_image(self, obj):
+        obj.image.url = self.context['request'].build_absolute_uri(obj.image.url)
+        return obj.image
+
+
 class UserRegisterSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 

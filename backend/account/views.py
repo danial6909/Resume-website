@@ -1,8 +1,9 @@
 from django.http import HttpResponse
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
 from rest_framework.views import APIView
-from backend.account.serializers import UserRegisterSerializer
+from backend.account.serializers import UserRegisterSerializer, CustomUserSerializer
 from .models import CustomUser
 
 
@@ -13,6 +14,9 @@ class RegisterAPIView(CreateAPIView):
     serializer_class = UserRegisterSerializer
     queryset = CustomUser.objects.all()
 
+
+class UserProfileAPIView(RetrieveUpdateAPIView):
+    permission_classes =
 
 class ExampleAPIView(APIView):
     def post(self, request, *args, **kwargs):
