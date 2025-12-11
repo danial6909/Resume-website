@@ -1,10 +1,12 @@
 /* components/LoginForm/LoginForm.module.css */
+@import '../../styles/color.css'; /* اطمینان از وارد کردن متغیرهای رنگ */
 
 .container {
   position: relative;
   width: 100vw;
   height: 100vh;
-  background: #000;
+  /* استفاده از متغیر */
+  background: var(--color-dark-bg); 
   overflow: hidden;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   direction: rtl;
@@ -16,16 +18,20 @@
   z-index: 2;
   width: 100%;
   max-width: 400px;
-  background: #000;
+  /* استفاده از متغیر */
+  background: var(--color-dark-bg); 
   background-clip: padding-box, border-box;
   background-origin: padding-box, border-box;
   background-image: 
-    linear-gradient(#000, #000),
-    linear-gradient(145deg, transparent 35%, #e81cff, #40c9ff);
+    /* استفاده از متغیر */
+    linear-gradient(var(--color-dark-bg), var(--color-dark-bg)),
+    /* استفاده از متغیرها برای گرادیانت بوردر */
+    linear-gradient(145deg, transparent 35%, var(--color-primary-accent), var(--color-secondary-accent));
   border: 2px solid transparent;
   border-radius: 16px;
   padding: 32px 24px;
-  color: white;
+  /* استفاده از متغیر */
+  color: var(--color-text-light); 
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -45,7 +51,8 @@
 .formDivider {
   height: 2px;
   width: 40px;
-  background: linear-gradient(to right, #e81cff, #40c9ff);
+  /* استفاده از متغیرها */
+  background: linear-gradient(to right, var(--color-primary-accent), var(--color-secondary-accent));
   margin: 8px auto;
   border-radius: 1px;
 }
@@ -68,7 +75,8 @@
   top: 12px;
   right: 16px;
   font-size: 14px;
-  color: #717171;
+  /* استفاده از متغیر */
+  color: var(--color-text-muted); 
   pointer-events: none;
   transition: all 0.3s ease;
   font-weight: 500;
@@ -78,19 +86,24 @@
   top: -10px;
   right: 8px;
   font-size: 12px;
-  background: #000;
+  /* استفاده از متغیر */
+  background: var(--color-dark-bg); 
   padding: 0 4px;
   border-radius: 2px;
-  color: #e81cff;
+  /* استفاده از متغیر */
+  color: var(--color-primary-accent); 
 }
 
 .formInput {
   width: 100%;
   padding: 12px 16px;
   border-radius: 8px;
-  background: rgba(30, 30, 30, 0.6);
-  border: 1px solid #414141;
-  color: white;
+  /* استفاده از متغیر */
+  background: var(--color-dark-input-bg); 
+  /* استفاده از متغیر */
+  border: 1px solid var(--color-dark-border); 
+  /* استفاده از متغیر */
+  color: var(--color-text-light); 
   font-family: inherit;
   font-size: 14px;
   outline: none;
@@ -99,8 +112,10 @@
 }
 
 .formInput:focus {
-  border-color: #e81cff;
-  box-shadow: 0 0 0 2px rgba(232, 28, 255, 0.2);
+  /* استفاده از متغیر */
+  border-color: var(--color-primary-accent); 
+  /* استفاده از متغیر برای سایه (با opacity) */
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-accent) 20%, transparent);
 }
 
 .formRow {
@@ -113,23 +128,27 @@
 .remember {
   display: flex;
   align-items: center;
-  color: #717171;
+  /* استفاده از متغیر */
+  color: var(--color-text-muted); 
   cursor: pointer;
 }
 
 .remember input {
   margin-left: 6px; /* راست‌چین: چک‌باکس سمت چپ متن */
-  accent-color: #e81cff;
+  /* استفاده از متغیر */
+  accent-color: var(--color-primary-accent); 
 }
 
 .forgot {
-  color: #40c9ff;
+  /* استفاده از متغیر */
+  color: var(--color-secondary-accent); 
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .forgot:hover {
-  color: #64ffda;
+  /* استفاده از متغیر */
+  color: var(--color-third-accent); 
   text-decoration: underline;
 }
 
@@ -138,8 +157,10 @@
   padding: 12px;
   border: none;
   border-radius: 8px;
-  background: #1a1a1a;
-  color: #ccc;
+  /* استفاده از متغیر */
+  background: var(--color-dark-surface); 
+  /* استفاده از متغیر */
+  color: var(--color-text-faded); 
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
@@ -155,14 +176,18 @@
   right: -100%; /* تغییر به right برای RTL */
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(100, 255, 218, 0.2), transparent);
+  /* استفاده از متغیر (با opacity داخلی) */
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-third-accent) 20%, transparent), transparent);
   transition: right 0.6s; /* تغییر به right */
 }
 
 .formSubmitBtn:hover {
-  background: linear-gradient(145deg, #2d003a, #002d3a);
-  color: white;
-  box-shadow: 0 0 12px rgba(100, 255, 218, 0.4);
+  /* در اینجا، به جای hardcoded gradient، می‌توانستیم از یک متغیر برای پس‌زمینه hover استفاده کنیم، اما چون این یک گرادیانت پیچیده است، آن را با رنگ‌های تم جدید تنظیم می‌کنیم. */
+  background: linear-gradient(145deg, #2d003a, #002d3a); /* گرادیانت تیره مشتق شده از رنگ‌های تم */
+  /* استفاده از متغیر */
+  color: var(--color-text-light); 
+  /* استفاده از متغیر برای سایه */
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-third-accent) 40%, transparent);
   transform: translateY(-2px);
 }
 
@@ -172,7 +197,8 @@
 
 .formSubmitBtn:active {
   transform: scale(0.96) translateY(0);
-  box-shadow: 0 0 8px rgba(232, 28, 255, 0.6);
+  /* استفاده از متغیر برای سایه */
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary-accent) 60%, transparent);
 }
 
 .formSubmitBtn:disabled {
@@ -194,12 +220,14 @@
 .signupText {
   text-align: center;
   font-size: 13px;
-  color: #555;
+  /* استفاده از رنگی که به تم نزدیک است (555 را به چیزی نزدیک به muted تغییر دادیم) */
+  color: color-mix(in srgb, var(--color-text-muted) 70%, transparent);
   margin-top: 16px;
 }
 
 .signupText a {
-  color: #40c9ff;
+  /* استفاده از متغیر */
+  color: var(--color-secondary-accent); 
   text-decoration: none;
   font-weight: 500;
 }

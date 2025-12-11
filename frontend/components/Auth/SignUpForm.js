@@ -4,9 +4,10 @@
 import { useRef, useEffect, useState } from 'react';
 import styles from './SignUpForm.module.css';
 import ParticlesBackground from "../LoginBackground/ParticlesBackground";
+import { useRegisterLogic } from '@/hooks/useRegisterLogic';
 
 export default function SignUpForm() {
-
+const { loading, register } = useRegisterLogic();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,25 +19,22 @@ export default function SignUpForm() {
 
 
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+const handleSubmit = (e) => {
+        e.preventDefault();
 
-    // اعتبارسنجی ساده
-    if (password !== confirmPassword) {
-      alert('❌ رمز عبور و تکرار آن یکسان نیستند.');
-      return;
-    }
+        // اعتبارسنجی اولیه تطابق رمز عبور (به هوک منتقل شده اما در اینجا برای UI هم مفید است)
+        if (password !== confirmPassword) {
+            alert('❌ رمز عبور و تکرار آن یکسان نیستند.');
+            return;
+        }
 
-    const btn = e.target.querySelector('button[type="submit"]');
-    btn.disabled = true;
-    btn.textContent = 'در حال ثبت‌نام...';
-
-    setTimeout(() => {
-      alert('✅ ثبت‌نام با موفقیت انجام شد! ایمیل تأیید ارسال گردید.');
-      btn.disabled = false;
-      btn.textContent = 'ثبت‌نام';
-    }, 1200);
-  };
+        // فراخوانی تابع register از هوک
+        // این تابع داخلی هوک، عملیات setLoading(true) را انجام می‌دهد
+        register(name, email, password, confirmPassword);
+        
+        // توجه: نیازی به دستکاری مستقیم DOM برای دکمه (btn.disabled/textContent) نیست،
+        // زیرا وضعیت loading از هوک به صورت خودکار رندر دکمه را مدیریت می‌کند.
+    };
 
   return (
     <div className={styles.container}>

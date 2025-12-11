@@ -11,10 +11,12 @@ export function useAuthLogic() {
     const [user, setUser] = useState(null);
 
     const login = useCallback(async (email, password) => {
+        const username = email
         setLoading(true);
         try {
-            const response = await axiosInstance.post('/testapi/', { email, password });
+            const response = await axiosInstance.post('/account/api/login/', { username, password });
             setUser(response.data.user);
+            console.log(response.data)
             navigate('/Home');
         } catch (error) {
             console.error('Login failed:', error);
