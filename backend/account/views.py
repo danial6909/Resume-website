@@ -3,8 +3,8 @@ from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from backend.account.serializers import UserRegisterSerializer, CustomUserSerializer
-from .models import CustomUser
+from .serializers import UserRegisterSerializer, ProfileSerializer
+from .models import CustomUser, Profile
 
 
 
@@ -16,7 +16,16 @@ class RegisterAPIView(CreateAPIView):
 
 
 class UserProfileAPIView(RetrieveUpdateAPIView):
-    permission_classes =
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProfileSerializer
+    queryset = Profile.objects.all()
+
+    def get_object(self):
+        try:
+            return self.request.user.profile
+        except Profile.DoesNotExist:
+            return Profile.objects.create(user=self.request.user)
+
 
 class ExampleAPIView(APIView):
     def post(self, request, *args, **kwargs):
