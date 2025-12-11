@@ -30,9 +30,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
-    image = models.ImageField(default='default.jpg', upload_to='profile_pics/')
+    image = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
     full_name = models.CharField( max_length=150, blank=True, null=True)
-    # bio = models.TextField(max_length=1000, blank=True)
+    bio = models.TextField(max_length=1000, blank=True)
     # date_of_birth = models.DateField(blank=True, null=True)
 
     def __str__(self):
