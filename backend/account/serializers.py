@@ -1,24 +1,33 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import CustomUser
+from .models import Profile
+from django.templatetags.static import static
 
 
 
-class CustomUserSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(allow_null=True, required = True)
+CustomUser = get_user_model()
+
+class ProfileSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
+
     class Meta:
-        model = CustomUser
-        fields = ['id', 'image', 'image_url', 'email', 'username', 'full_name']
-        read_only_fields = ['id', 'username']
+        model = Profile
+        fields = ['id', 'image', 'image_url', 'full_name', 'bio']
+        read_only_fields = ['id']
 
     def get_image_url(self, obj):
         if obj.image:
-            return self.context['request'].build_absolute_uri(obj.image.url)
-        return None
+            if 'request' in self.context:
+                return self.context['request'].build_absolute_uri(obj.image.url)
+            return obj.image.url
+
+        default_static_path = 'images/profile_pics/profile_image_default.png'
+
+        if 'request' in self.context:
+            return self.context['request'].build_absolute_uri(static(default_static_path))
+        return static(default_static_path)
 
     def update(self, instance, validated_data):
-        validated_data.pop('username', None)
-
         return super().update(instance, validated_data)
 
 
