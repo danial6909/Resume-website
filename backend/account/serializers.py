@@ -48,3 +48,44 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             password2 = validated_data.pop('password2')
             user = CustomUser.objects.create_user(**validated_data)
             return user
+
+
+class UserCredentialsUpdateSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=False, max_length=150)
+    username = serializers.CharField(required=False, max_length=150)
+    current_password = serializers.CharField(write_only=True)
+
+    def validate_current_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError({'current_password': "Your current password is incorrect."})
+        return value
+
+    def validate(self, data):
+        user = self.context['request'].user
+        new_username = data.get('username')
+
+        if new_username and new_username != user.username:
+            if CustomUser.objects.filter(username=new_username).exists():
+                raise serializers.ValidationError({'username' : 'This Username already exists'})
+
+        new_email = data.get('email')
+        if new_email and new_email != user.email:
+            if CustomUser.objects.filter(email=new_email).exists():
+                raise serializers.ValidationError({'email' : 'This Email already exists'})
+
+        if not new_username and not new_email:
+            raise serializers.ValidationError('At least one of the username or email fields must be submitted for update.')
+
+        return data
+
+    def update(self, instance, validated_data):
+        if validated_data['email']:
+            instance.email = validated_data['email']
+
+        if validated_data['username']:
+            instance.username = validated_data['username']
+
+        instance.save()
+        return instance
+
