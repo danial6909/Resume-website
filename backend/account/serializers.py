@@ -1,7 +1,9 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from .models import Profile
 from django.templatetags.static import static
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 
 
@@ -89,3 +91,35 @@ class UserCredentialsUpdateSerializer(serializers.Serializer):
         instance.save()
         return instance
 
+
+class PasswordChangeSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, write_only=True)
+    new_password_confirm = serializers.CharField(required=True, write_only=True)
+
+    def validate_old_password(self, value):
+        user = self.context['request'].user
+
+        if not user.check_password(value):
+            raise serializers.ValidationError({'old_password': "Your current password is incorrect."})
+        return value
+
+    def validate(self, data):
+        new_password = data.get('password1')
+        new_password_confirm = data.get('password2')
+
+        if new_password != new_password_confirm:
+            raise serializers.ValidationError({'new_password_confirm': "Passwords don't match"})
+
+        try:
+            validate_password(new_password, self.context['request'].user)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError({'new_password': list(e.messages)})
+
+        return data
+
+    def save(self, request):
+        user = self.context['request'].user
+        user.set_password(self.validated_data['new_password'])
+        user.save()
+        return user

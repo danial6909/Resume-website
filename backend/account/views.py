@@ -1,9 +1,11 @@
 from django.http import HttpResponse
+from rest_framework import status
 from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import UserRegisterSerializer, ProfileSerializer, UserCredentialsUpdateSerializer
+from .serializers import UserRegisterSerializer, ProfileSerializer, UserCredentialsUpdateSerializer, \
+    PasswordChangeSerializer
 from .models import CustomUser, Profile
 
 
@@ -38,8 +40,24 @@ class UserCredentialsUpdateAPIView(RetrieveUpdateAPIView):
         return {'request': self.request}
 
 
+class PasswordChangeAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PasswordChangeSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+        return Response({'message': 'Password changed successfully!'}, status=status.HTTP_200_OK)
+
+
+
+
+
 class ExampleAPIView(APIView):
     def post(self, request, *args, **kwargs):
         data = request.data
         print(data)
         return HttpResponse(data.values())
+
