@@ -123,3 +123,28 @@ class PasswordChangeSerializer(serializers.Serializer):
         user.set_password(self.validated_data['new_password'])
         user.save()
         return user
+
+
+class PhoneNumberUpdateSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(required=True, max_length=13)
+    current_password = serializers.CharField(write_only=True)
+
+    def validate_current_password(self, value):
+        user = self.context['request'].user
+
+        if not user.check_password(value):
+            raise serializers.ValidationError("Your current password is incorrect.")
+        return value
+
+    def validate_phone_number(self, value):
+        user = self.context['request'].user
+
+        if value != user.phone_number:
+            if CustomUser.objects.filter(phone_number=value).exists():
+                raise serializers.ValidationError('This phone number already exists.')
+        return value
+
+    def update(self, instance, validated_data):
+        instance.phone_number = validated_data['phone_number']
+        instance.save()
+        return instance
