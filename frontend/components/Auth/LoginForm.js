@@ -45,7 +45,7 @@ export default function LoginForm() {
                 </label>
                 <input
                   id="email"
-                  type="email"
+                  type="text"
                   className={styles.formInput}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -71,7 +71,7 @@ export default function LoginForm() {
                   id="password"
                   type="password"
                   className={styles.formInput}
-                  value={password}
+                  value={String(password)}
                   onChange={(e) => setPassword(e.target.value)}
                   onFocus={() => setIsPasswordFocused(true)}
                   onBlur={() => setIsPasswordFocused(false)}

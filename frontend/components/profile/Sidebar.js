@@ -1,60 +1,61 @@
 "use client"
-// Sidebar.js
+
 import React from 'react';
 import { User, Lock, Bell, LogOut } from 'lucide-react';
-// ... بقیه کد مشابه فایل قبلی ...
 
 const sidebarItems = [
   { id: 'general', label: 'اطلاعات حساب', icon: User },
-  { id: 'security', label: 'امنیت و رمز عبور', icon: Lock },
+  { id: 'security', label: 'امنیت', icon: Lock },
   { id: 'notifications', label: 'اعلانات', icon: Bell },
 ];
 
-export default function Sidebar({ activeTab, setActiveTab, onLogoutClick, firstName, lastName }) {
-  // این کامپوننت نیاز به "use client" دارد چون رویدادهای onClick را مدیریت می‌کند.
+export default function Sidebar({ activeTab, setActiveTab, onLogoutClick, firstName }) {
   return (
-    <aside className="w-full md:w-64 flex-shrink-0 ">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden fixed top-26 w-11/12 md:w-64">
-        
-        {/* کارت کاربر */}
-        <div className="p-4 border-b border-gray-100 bg-gray-50/50">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-              {firstName.charAt(0)}
+    // ✨ تغییرات در این خط اعمال شده است
+    <aside className="w-full md:w-64 flex-shrink-0 md: md:top-8 self-start">
+      {/* کلاس sticky و top-8 از اینجا حذف شده است */}
+      <div className="bg-surface/50 backdrop-blur-lg border border-border rounded-2xl overflow-hidden fixed top-24 w-11/12 md:w-64 ">
+     
+        {/* User Card */}
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-accent to-secondary-accent flex items-center justify-center text-white font-bold text-xl shadow-lg">
+              {firstName ? firstName.charAt(0).toUpperCase() : 'U'}
             </div>
             <div>
-              <p className="font-bold text-sm text-gray-900">{firstName}</p>
-              <p className="text-xs text-gray-500 mt-0.5">کاربر معمولی</p>
+              <p className="font-bold text-base text-text-main">{firstName || "نام کاربری"}</p>
+              <p className="text-xs text-text-faded mt-0.5">کاربر معمولی</p>
             </div>
           </div>
         </div>
 
-        {/* منوی ناوبری */}
+        {/* Navigation Menu */}
         <nav className="p-2 space-y-1">
           {sidebarItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={`
-                w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 relative
                 ${activeTab === item.id 
-                  ? 'bg-blue-50 text-blue-600' 
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
+                  ? 'bg-primary-accent/10 text-primary-accent' 
+                  : 'text-text-faded hover:bg-surface/80 hover:text-text-main'}
               `}
             >
-              <item.icon size={18} />
-              {item.label}
+              {activeTab === item.id && <div className="absolute left-0 w-1 h-6 bg-primary-accent rounded-r-full"></div>}
+              <item.icon size={20} />
+              <span>{item.label}</span>
             </button>
           ))}
           
-          {/* دکمه خروج از حساب */}
-          <div className="pt-2 mt-2 border-t border-gray-100">
+          {/* Logout Button */}
+          <div className="pt-2 mt-2 border-t border-border">
             <button 
               onClick={onLogoutClick}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-red-500 hover:bg-red-50 hover:text-red-700"
+              className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors text-red-400 hover:bg-red-500/10 hover:text-red-300"
             >
-              <LogOut size={18} />
-              خروج از حساب
+              <LogOut size={20} />
+              <span>خروج از حساب</span>
             </button>
           </div>
         </nav>

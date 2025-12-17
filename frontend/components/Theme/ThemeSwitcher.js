@@ -19,7 +19,7 @@ export default function ThemeSwitcher() {
       aria-label="Toggle Dark Mode"
       className="p-2 rounded-full transition duration-800 hover:rotate-360
                  text-gray-600 hover:bg-gray-200
-                 dark:text-secondary-accent dark:hover:bg-border cursor-pointer ease-out hover:scale-105"
+                 dark:text-primary-accent dark:hover:bg-border cursor-pointer ease-out hover:scale-105"
     >
       {theme === "dark" ? <SunMedium /> : <Moon />}
     </button>

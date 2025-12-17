@@ -19,7 +19,7 @@ const initialFormData = {
 export default function UserProfile() {
   
     return (
-        <div className=" bg-gray-50 text-gray-800 font-sans pb-10 mt-8 m-7 " dir="rtl">
+        <div className=" bg-gray-50 text-gray-800 font-sans  " dir="rtl">
             {/* ClientProfileWrapper: بخش تعاملی و متغیر که باید در کلاینت رندر شود */}
             <ClientProfileWrapper initialData={initialFormData} />
         </div>
