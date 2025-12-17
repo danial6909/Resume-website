@@ -68,7 +68,3 @@ class ExampleAPIView(APIView):
         data = request.data
         print(data)
         return HttpResponse(data.values())
-
-
-    # test comment
-

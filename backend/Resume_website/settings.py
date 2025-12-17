@@ -162,3 +162,23 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA' : False,
     'COMPONENT_SPLIT_REQUEST' : True,
 }
+
+# To get a logfile of errors happen in server
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'errors.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
