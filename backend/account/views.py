@@ -62,9 +62,3 @@ class PhoneNumberUpdateAPIView(RetrieveUpdateAPIView):
     def get_serializer_context(self):
         return {'request': self.request}
 
-
-class ExampleAPIView(APIView):
-    def post(self, request, *args, **kwargs):
-        data = request.data
-        print(data)
-        return HttpResponse(data.values())

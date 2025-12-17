@@ -17,7 +17,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ['id', 'image', 'image_url', 'full_name', 'bio']
         read_only_fields = ['id']
 
-    def get_image_url(self, obj):
+    def get_image_url(self, obj)-> str:
         if obj.image:
             if 'request' in self.context:
                 return self.context['request'].build_absolute_uri(obj.image.url)
