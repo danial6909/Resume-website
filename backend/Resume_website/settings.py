@@ -147,12 +147,15 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
+with open(os.environ.get('JWT_PRIVATE_KEY_PATH'), 'r') as f:
+    PRIVATE_KEY_CONTENT = f.read()
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
     'ROTATE_REFRESH_TOKENS': True,
     'ALGORITHM': 'RS256',
-    'SIGNING_KEY': SECRET_KEY,
+    'SIGNING_KEY': PRIVATE_KEY_CONTENT,
 }
 
 SPECTACULAR_SETTINGS = {
