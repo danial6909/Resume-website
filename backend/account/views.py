@@ -1,10 +1,12 @@
+from drf_spectacular.types import OpenApiTypes
 from rest_framework import status
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserRegisterSerializer, ProfileSerializer, UserCredentialsUpdateSerializer, \
-    PasswordChangeSerializer, PhoneNumberUpdateSerializer
+    PasswordChangeSerializer, PhoneNumberUpdateSerializer, LoginSerializer
 from .models import Profile
 from django.contrib.auth import authenticate
 from .utils import get_tokens_for_user
@@ -44,6 +46,10 @@ class RegisterAPIView(APIView):
 class LoginAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        request=LoginSerializer,
+        responses={200: OpenApiTypes.OBJECT},
+        description='login details, and get necessary cookies')
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
@@ -80,6 +86,10 @@ class CookieTokenRefreshView(APIView):
 class LogoutAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        request=None,
+        responses={200: OpenApiTypes.OBJECT},
+        description='logout details, and remove necessary cookies')
     def post(self, request):
         response = Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
         response.delete_cookie('access_token', path='/')

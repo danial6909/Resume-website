@@ -65,6 +65,11 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             return CustomUser.objects.create_user(**validated_data)
 
 
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(style={'input_type': 'password'})
+
+
 class UserCredentialsUpdateSerializer(serializers.Serializer):
     email = serializers.EmailField(required=False, max_length=150)
     username = serializers.CharField(required=False, max_length=150)
