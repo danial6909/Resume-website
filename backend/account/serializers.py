@@ -55,7 +55,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'password': list(e.messages)})
 
         try:
-            validate_email(email)
+            validate_email(data['email'])
         except DjangoValidationError as e:
             raise serializers.ValidationError({'email': list(e.messages)})
         return data
