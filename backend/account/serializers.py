@@ -60,6 +60,12 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'email': list(e.messages)})
         return data
 
+    def validate_username(self, value):
+        username = value.lower().strip()
+        if CustomUser.objects.filter(username=username).exists():
+            raise serializers.ValidationError({'username' : 'This Username already exists'})
+        return username
+
     def create(self, validated_data):
             validated_data.pop('password2')
             return CustomUser.objects.create_user(**validated_data)

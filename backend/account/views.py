@@ -16,7 +16,7 @@ from drf_spectacular.utils import extend_schema
 
 COOKIE_SETTINGS = {
     'httponly': True,
-    'secure': True,  # در حالت توسعه (Local) اگر HTTPS نداری این را False کن
+    'secure': True,
     'samesite': 'Lax',
     'path': '/',
 }
