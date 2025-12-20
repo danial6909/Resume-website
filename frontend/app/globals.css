@@ -7,7 +7,7 @@
 @theme {
   --color-primary-accent: oklch(from var(--primary-accent) l c h);
   --color-secondary-accent: oklch(from var(--secondary-accent) l c h);
-  --color-third-accent: oklch(from var(--third-accent) l c h);
+ 
 
   --color-background: oklch(from var(--background) l c h);
   --color-surface: oklch(from var(--surface) l c h);
@@ -22,16 +22,13 @@
    2) LIGHT MODE (پیش‌فرض)
 -----------------------------------------*/
 :root {
-  /* رنگ‌های اکسنت (ثابت) */
-  --primary-accent: #e81cff;
-  --secondary-accent: #40c9ff;
-  --third-accent: #64ffda;
-
   /* Light Theme */
+  --primary-accent: #00bc91;
+  --secondary-accent: #40c9ff;
+
   --background: #ffffff;
   --surface: #f5f5f5;
   --border: #dddddd;
-  --text-menu: #121111;
 
   --text-main: #111111;
   --text-faded: #555555;
@@ -42,19 +39,15 @@
    3) DARK MODE
 -----------------------------------------*/
 html.dark {
-  /* رنگ‌های اکسنت (ثابت - اگر خواستی می‌تونی آنها را هم تغییر بدی) */
-  --primary-accent: #e81cff;
+
+  --primary-accent: #00bc91;
   --secondary-accent: #40c9ff;
-  --third-accent: #64ffda;
-
-  /* Dark Theme */
-  --background: #000000;
+  
+  --background: rgb(32, 32, 32);
   --surface: #1a1a1a;
-  --border: #414141;
-  --text-menu: #64ffda;
-
-
+  --border: rgb(255 255 255 / 7%);
+  
   --text-main: #ffffff;
-  --text-faded: #cccccc;
-  --text-muted: #888888;
+  --text-faded: #ffffffaa;
+  --text-muted: #fff3;
 }

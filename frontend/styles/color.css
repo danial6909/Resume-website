@@ -11,7 +11,7 @@
   --color-third-accent: #64ffda; /* سبز روشن/آکوا (استفاده شده در hover) */
 
   /* Background & Base Colors (رنگ‌های پس‌زمینه و پایه تیره) */
-  --color-dark-bg: #000; /* پس‌زمینه کاملا تیره */
+  --color-dark-bg:  #000; /* پس‌زمینه کاملا تیره */
   --color-dark-surface: #1a1a1a; /* سطح کمی روشن‌تر (برای دکمه‌ها) */
   --color-dark-input-bg: rgba(30, 30, 30, 0.6); /* پس‌زمینه اینپوت شفاف */
   --color-dark-border: #414141; /* رنگ بوردر تیره */
@@ -22,12 +22,3 @@
   --color-text-muted: #717171; /* متن محو شده */
 }
 
-/*
-  نحوه استفاده در CSS معمولی:
-  .formTitle {
-    color: var(--color-primary-accent);
-  }
-
-  نحوه استفاده در Tailwind (اگر این متغیرها در فایل کانفیگ Tailwind شما تزریق شوند):
-  <div class="text-primary-accent">...</div>
-*/

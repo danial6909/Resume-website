@@ -8,7 +8,7 @@ export function useRegisterLogic() {
    
     const register = useCallback(async (username, email, password, password2) => {
         
-      
+      console.log(username , email , password, password2)
         if (password !== password2) {
             alert('رمز عبور و تکرار آن یکسان نیستند.');
             return; 
@@ -17,10 +17,11 @@ export function useRegisterLogic() {
         setLoading(true);
         try {
             // ارسال داده‌ها (فقط password ارسال می‌شود، نه password2)
-            const response = await axiosInstance.post('/account/api/register/', { 
-                username, 
+            const response = await axiosInstance.post('/api/register/', { 
                 email, 
-                password
+                username, 
+                password,
+                password2
                 
             });
             
