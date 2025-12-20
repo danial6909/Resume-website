@@ -8,6 +8,7 @@ from .serializers import UserRegisterSerializer, ProfileSerializer, UserCredenti
 from .models import Profile
 from django.contrib.auth import authenticate
 from .utils import get_tokens_for_user
+from drf_spectacular.utils import extend_schema
 
 
 
@@ -21,6 +22,7 @@ COOKIE_SETTINGS = {
 class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(request=UserRegisterSerializer, responses=UserRegisterSerializer)
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid():
