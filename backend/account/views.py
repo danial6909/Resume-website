@@ -22,7 +22,7 @@ COOKIE_SETTINGS = {
 class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(request=UserRegisterSerializer, responses=UserRegisterSerializer)
+    @extend_schema(request=UserRegisterSerializer)
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid():
