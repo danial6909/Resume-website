@@ -1,20 +1,88 @@
-from django.http import HttpResponse
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import UserRegisterSerializer, ProfileSerializer, UserCredentialsUpdateSerializer, \
     PasswordChangeSerializer, PhoneNumberUpdateSerializer
-from .models import CustomUser, Profile
+from .models import Profile
+from django.contrib.auth import authenticate
+from .utils import get_tokens_for_user
 
 
 
+COOKIE_SETTINGS = {
+    'httponly': True,
+    'secure': True,  # در حالت توسعه (Local) اگر HTTPS نداری این را False کن
+    'samesite': 'Lax',
+    'path': '/',
+}
 
-class RegisterAPIView(CreateAPIView):
+class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
-    serializer_class = UserRegisterSerializer
-    queryset = CustomUser.objects.all()
+
+    def post(self, request):
+        serializer = UserRegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            tokens = get_tokens_for_user(user)
+
+            response = Response({
+                "message": "User registered successfully",
+                "user": serializer.data
+            }, status=status.HTTP_201_CREATED)
+
+            response.set_cookie(key='access_token', value=tokens['access'], **COOKIE_SETTINGS)
+            response.set_cookie(key='refresh_token', value=tokens['refresh'], **COOKIE_SETTINGS)
+            return response
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LoginAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(username=username, password=password)
+
+        if user:
+            tokens = get_tokens_for_user(user)
+            response = Response({"message": "Login successful"}, status=status.HTTP_200_OK)
+            response.set_cookie(key='access_token', value=tokens['access'], **COOKIE_SETTINGS)
+            response.set_cookie(key='refresh_token', value=tokens['refresh'], **COOKIE_SETTINGS)
+            return response
+
+        return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class CookieTokenRefreshView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        refresh_token = request.COOKIES.get('refresh_token')
+        if not refresh_token:
+            return Response({"detail": "Refresh token missing"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            new_access_token = str(refresh.access_token)
+            response = Response({"message": "Token refreshed"}, status=status.HTTP_200_OK)
+            response.set_cookie(key='access_token', value=new_access_token, **COOKIE_SETTINGS)
+            return response
+        except Exception:
+            return Response({"detail": "Invalid refresh token"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class LogoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        response = Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
+        response.delete_cookie('access_token', path='/')
+        response.delete_cookie('refresh_token', path='/')
+        return response
 
 
 class UserProfileAPIView(RetrieveUpdateAPIView):

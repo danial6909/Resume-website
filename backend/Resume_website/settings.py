@@ -21,6 +21,7 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
 
 cors_string = os.environ.get('CORS_ORIGINS', '')
 CORS_ALLOWED_ORIGINS = cors_string.split(',')
+CORS_ALLOW_CREDENTIALS = True
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = True
