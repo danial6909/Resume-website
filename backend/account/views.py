@@ -59,7 +59,7 @@ class LoginAPIView(APIView):
             tokens = get_tokens_for_user(user)
             response = Response({
                 "message": "Login successful",
-                "user": UserInfoSerializer
+                "user": UserInfoSerializer(user).data,
             }, status=status.HTTP_200_OK)
             response.set_cookie(key='access_token', value=tokens['access'], **COOKIE_SETTINGS)
             response.set_cookie(key='refresh_token', value=tokens['refresh'], **COOKIE_SETTINGS)
