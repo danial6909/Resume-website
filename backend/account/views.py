@@ -24,7 +24,10 @@ COOKIE_SETTINGS = {
 class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(request=UserRegisterSerializer)
+    @extend_schema(
+        request=UserRegisterSerializer,
+        responses={201: UserInfoSerializer}
+    )
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -48,8 +51,9 @@ class LoginAPIView(APIView):
 
     @extend_schema(
         request=LoginSerializer,
-        responses={200: OpenApiTypes.OBJECT},
-        description='login details, and get necessary cookies')
+        responses={200: UserInfoSerializer},
+        description='Login and get user data with cookies'
+    )
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
