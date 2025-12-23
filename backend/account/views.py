@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserRegisterSerializer, ProfileSerializer, UserCredentialsUpdateSerializer, \
-    PasswordChangeSerializer, PhoneNumberUpdateSerializer, LoginSerializer
+    PasswordChangeSerializer, PhoneNumberUpdateSerializer, LoginSerializer, UserInfoSerializer
 from .models import Profile
 from django.contrib.auth import authenticate
 from .utils import get_tokens_for_user
@@ -33,7 +33,7 @@ class RegisterAPIView(APIView):
 
             response = Response({
                 "message": "User registered successfully",
-                "user": serializer.data
+                "user": UserInfoSerializer(user).data,
             }, status=status.HTTP_201_CREATED)
 
             response.set_cookie(key='access_token', value=tokens['access'], **COOKIE_SETTINGS)
@@ -57,7 +57,10 @@ class LoginAPIView(APIView):
 
         if user:
             tokens = get_tokens_for_user(user)
-            response = Response({"message": "Login successful"}, status=status.HTTP_200_OK)
+            response = Response({
+                "message": "Login successful",
+                "user": UserInfoSerializer
+            }, status=status.HTTP_200_OK)
             response.set_cookie(key='access_token', value=tokens['access'], **COOKIE_SETTINGS)
             response.set_cookie(key='refresh_token', value=tokens['refresh'], **COOKIE_SETTINGS)
             return response
