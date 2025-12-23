@@ -1,14 +1,14 @@
 from django.urls import path
 from . import views
-from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 
 
 urlpatterns = [
-    path('api/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/register/', views.RegisterAPIView.as_view(), name='register'),
+    path('register/', views.RegisterAPIView.as_view(), name='register'),
+    path('login/', views.LoginAPIView.as_view(), name='login'),
+    path('logout/', views.LogoutAPIView.as_view(), name='logout'),
+    path('refresh-token/', views.CookieTokenRefreshView.as_view(), name='token_refresh'),
     path('profile/', views.UserProfileAPIView.as_view(), name='profile'),
-    path('change_credentials/', views.UserCredentialsUpdateAPIView.as_view(), name='credentials'),
-    path('change_password/', views.PasswordChangeAPIView.as_view(), name='change_password'),
-    path('change_phone_number/', views.PhoneNumberUpdateAPIView.as_view(), name='change_phone_number'),
+    path('change-credentials/', views.UserCredentialsUpdateAPIView.as_view(), name='credentials'),
+    path('change-password/', views.PasswordChangeAPIView.as_view(), name='change_password'),
+    path('change-phone_number/', views.PhoneNumberUpdateAPIView.as_view(), name='change_phone_number'),
 ]

@@ -1,20 +1,107 @@
-from django.http import HttpResponse
+from drf_spectacular.types import OpenApiTypes
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserRegisterSerializer, ProfileSerializer, UserCredentialsUpdateSerializer, \
-    PasswordChangeSerializer, PhoneNumberUpdateSerializer
-from .models import CustomUser, Profile
+    PasswordChangeSerializer, PhoneNumberUpdateSerializer, LoginSerializer, UserInfoSerializer
+from .models import Profile
+from django.contrib.auth import authenticate
+from .utils import get_tokens_for_user
+from drf_spectacular.utils import extend_schema
 
 
 
+COOKIE_SETTINGS = {
+    'httponly': True,
+    'secure': True,
+    'samesite': 'Lax',
+    'path': '/',
+}
 
-class RegisterAPIView(CreateAPIView):
+class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
-    serializer_class = UserRegisterSerializer
-    queryset = CustomUser.objects.all()
+
+    @extend_schema(
+        request=UserRegisterSerializer,
+        responses={201: UserInfoSerializer}
+    )
+    def post(self, request):
+        serializer = UserRegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            tokens = get_tokens_for_user(user)
+
+            response = Response({
+                "message": "User registered successfully",
+                "user": UserInfoSerializer(user).data,
+            }, status=status.HTTP_201_CREATED)
+
+            response.set_cookie(key='access_token', value=tokens['access'], **COOKIE_SETTINGS)
+            response.set_cookie(key='refresh_token', value=tokens['refresh'], **COOKIE_SETTINGS)
+            return response
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LoginAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        request=LoginSerializer,
+        responses={200: UserInfoSerializer},
+        description='Login and get user data with cookies'
+    )
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(username=username, password=password)
+
+        if user:
+            tokens = get_tokens_for_user(user)
+            response = Response({
+                "message": "Login successful",
+                "user": UserInfoSerializer(user).data,
+            }, status=status.HTTP_200_OK)
+            response.set_cookie(key='access_token', value=tokens['access'], **COOKIE_SETTINGS)
+            response.set_cookie(key='refresh_token', value=tokens['refresh'], **COOKIE_SETTINGS)
+            return response
+
+        return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class CookieTokenRefreshView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        refresh_token = request.COOKIES.get('refresh_token')
+        if not refresh_token:
+            return Response({"detail": "Refresh token missing"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            new_access_token = str(refresh.access_token)
+            response = Response({"message": "Token refreshed"}, status=status.HTTP_200_OK)
+            response.set_cookie(key='access_token', value=new_access_token, **COOKIE_SETTINGS)
+            return response
+        except Exception:
+            return Response({"detail": "Invalid refresh token"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class LogoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        request=None,
+        responses={200: OpenApiTypes.OBJECT},
+        description='logout details, and remove necessary cookies')
+    def post(self, request):
+        response = Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
+        response.delete_cookie('access_token', path='/')
+        response.delete_cookie('refresh_token', path='/')
+        return response
 
 
 class UserProfileAPIView(RetrieveUpdateAPIView):

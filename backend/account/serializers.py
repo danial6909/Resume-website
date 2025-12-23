@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.core.validators import validate_email
 from rest_framework import serializers
 from .models import Profile
 from django.templatetags.static import static
@@ -33,6 +34,12 @@ class ProfileSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
+class UserInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username', 'email']
+
+
 class UserRegisterSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 
@@ -42,14 +49,37 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         extra_kwargs = {"password": {'write_only': True}}
 
     def validate(self, data):
-            if data['password'] != data['password2']:
-                raise serializers.ValidationError({'password': "passwords aren't matched"})
-            return data
+        data['username'] = data['username'].lower().strip()
+        data['email'] = data['email'].lower().strip()
+
+        if data['password'] != data['password2']:
+            raise serializers.ValidationError({'password': "passwords aren't matched"})
+
+        try:
+            validate_password(data['password'], user=CustomUser)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError({'password': list(e.messages)})
+
+        try:
+            validate_email(data['email'])
+        except DjangoValidationError as e:
+            raise serializers.ValidationError({'email': list(e.messages)})
+        return data
+
+    def validate_username(self, value):
+        username = value.lower().strip()
+        if CustomUser.objects.filter(username=username).exists():
+            raise serializers.ValidationError({'username' : 'This Username already exists'})
+        return username
 
     def create(self, validated_data):
-            password2 = validated_data.pop('password2')
-            user = CustomUser.objects.create_user(**validated_data)
-            return user
+            validated_data.pop('password2')
+            return CustomUser.objects.create_user(**validated_data)
+
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(style={'input_type': 'password'})
 
 
 class UserCredentialsUpdateSerializer(serializers.Serializer):
