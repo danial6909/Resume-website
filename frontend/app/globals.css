@@ -43,7 +43,7 @@ html.dark {
   --primary-accent: #00bc91;
   --secondary-accent: #40c9ff;
   
-  --background: rgb(32, 32, 32);
+  --background: #0f0f0f;
   --surface: #1a1a1a;
   --border: rgb(255 255 255 / 7%);
   
@@ -51,3 +51,4 @@ html.dark {
   --text-faded: #ffffffaa;
   --text-muted: #fff3;
 }
+

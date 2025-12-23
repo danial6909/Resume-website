@@ -1,9 +1,11 @@
 // frontend/hooks/useRegisterLogic.js
 import { useState, useCallback } from 'react';
 import axiosInstance from "../utils/axiosInstance";
+import { useRouter } from 'next/navigation';
 
 export function useRegisterLogic() {
     const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
    
     const register = useCallback(async (username, email, password, password2) => {
@@ -17,7 +19,7 @@ export function useRegisterLogic() {
         setLoading(true);
         try {
             // ارسال داده‌ها (فقط password ارسال می‌شود، نه password2)
-            const response = await axiosInstance.post('/api/register/', { 
+            const response = await axiosInstance.post('/account/register/', { 
                 email, 
                 username, 
                 password,
@@ -27,7 +29,7 @@ export function useRegisterLogic() {
             
             console.log('Registration successful:', response.data);
             alert('ثبت‌نام با موفقیت انجام شد!');
-
+              router.push('/');
         } catch (error) {
             console.error('Registration failed:', error);
             

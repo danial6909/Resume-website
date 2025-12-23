@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // 🚀 تعریف آدرس پایه (Base URL)
-const BASE_URL = 'https://dev-api.kelidari.ir/web/account/';
+const BASE_URL = 'https://dev-api.kelidari.ir/api/v1/';
 
 // 🛠️ ایجاد Instance سفارشی
 const axiosInstance = axios.create({

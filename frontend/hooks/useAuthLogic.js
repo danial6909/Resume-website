@@ -17,11 +17,11 @@ export function useAuthLogic() {
         console.log(username ,typeof(password))
         setLoading(true);
         try {
-            const response = await axiosInstance.post('/api/login/', { username, password });
+            const response = await axiosInstance.post('account/login/', { username, password });
             setUser(response.data.user);
             console.log(response.data)
 
-            router.push('/Home'); // هدایت به داشبورد پس از ورود موفق
+            router.push('/'); // هدایت به داشبورد پس از ورود موفق
         } catch (error) {
             console.error('Login failed:', error);
             alert('Login failed. Please check your credentials.');
