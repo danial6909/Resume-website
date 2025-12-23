@@ -64,6 +64,7 @@ export default function HomePage() {
         src={background9}
         alt="Background"
         className="w-full h-screen top-0 left-0 -z-10"
+        priority
       />
       {/* <Image
         quality={80} // کیفیت 80 برای وب کاملا مناسب و بهینه‌تر است
@@ -72,59 +73,60 @@ export default function HomePage() {
         className="w-full h-screen   absolute  "
       /> */}
     
-      <div className="  flex flex-col items-center justify-center  pt-20  ">
+     <main className="flex flex-col items-center justify-center pt-20 pb-20 overflow-x-hidden ">
         <AnimatedTitle title="خدمات ما" />
 
-        {/* service */}
-        <div className="text-center  z-5  px-4 flex-wrap flex  justify-center gap-10 mt-10 mb-32 ">
-          <ServiceCard
-            icon={<WebIcon />}
-            title="توسعه وب"
-            description="طراحی و پیاده‌سازی وب‌سایت‌ها و اپلیکیشن‌های مدرن، واکنش‌گرا و بهینه برای موتورهای جستجو."
-            readMore="بیشتر بخوانید"
-          />
-
-          {/* --- کارت دوم: اپلیکیشن موبایل --- */}
-          <ServiceCard
-            icon={<MobileIcon />}
-            title="توسعه اپلیکیشن موبایل"
-            description="ساخت اپلیکیشن‌های نیتیو و کراس‌پلتفرم برای iOS و Android با تمرکز بر تجربه کاربری و عملکرد بالا."
-            readMore="مشاهده جزئیات"
-          />
-
-          {/* --- کارت سوم: سئو و بازاریابی --- */}
-          <ServiceCard
-            icon={<SeoIcon />}
-            title="سئو و بازاریابی دیجیتال"
-            description="افزایش بازدید و رتبه سایت شما در گوگل با استراتژی‌های مدرن سئو و کمپین‌های بازاریابی هدفمند."
-            readMore="شروع کنید"
-          />
-                 <ServiceCard
-            icon={<WebIcon />}
-            title="توسعه وب"
-            description="طراحی و پیاده‌سازی وب‌سایت‌ها و اپلیکیشن‌های مدرن، واکنش‌گرا و بهینه برای موتورهای جستجو."
-            readMore="بیشتر بخوانید"
-          />
-
-          {/* --- کارت دوم: اپلیکیشن موبایل --- */}
-          <ServiceCard
-            icon={<MobileIcon />}
-            title="توسعه اپلیکیشن موبایل"
-            description="ساخت اپلیکیشن‌های نیتیو و کراس‌پلتفرم برای iOS و Android با تمرکز بر تجربه کاربری و عملکرد بالا."
-            readMore="مشاهده جزئیات"
-          />
-
-          {/* --- کارت سوم: سئو و بازاریابی --- */}
-          <ServiceCard
-            icon={<SeoIcon />}
-            title="سئو و بازاریابی دیجیتال"
-            description="افزایش بازدید و رتبه سایت شما در گوگل با استراتژی‌های مدرن سئو و کمپین‌های بازاریابی هدفمند."
-            readMore="شروع کنید"
-          />
-          <StepWork/>
-          <TestimonialSlider/>
+        {/* بخش خدمات - اصلاح گرید */}
+        <div className=" mx-auto px-4 mt-12 ">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
+            <ServiceCard
+              icon={<WebIcon />}
+              title="توسعه وب"
+              description="طراحی و پیاده‌سازی وب‌سایت‌ها و اپلیکیشن‌های مدرن، واکنش‌گرا و بهینه."
+              readMore="بیشتر بخوانید"
+            />
+            <ServiceCard
+              icon={<MobileIcon />}
+              title="اپلیکیشن موبایل"
+              description="ساخت اپلیکیشن‌های نیتیو و کراس‌پلتفرم برای iOS و Android."
+              readMore="مشاهده جزئیات"
+            />
+            <ServiceCard
+              icon={<SeoIcon />}
+              title="سئو و مارکتینگ"
+              description="افزایش بازدید و رتبه سایت شما در گوگل با استراتژی‌های مدرن."
+              readMore="شروع کنید"
+            />
+            <ServiceCard
+              icon={<WebIcon />}
+              title="توسعه وب"
+              description="طراحی و پیاده‌سازی وب‌سایت‌ها و اپلیکیشن‌های مدرن، واکنش‌گرا و بهینه."
+              readMore="بیشتر بخوانید"
+            />
+            <ServiceCard
+              icon={<MobileIcon />}
+              title="اپلیکیشن موبایل"
+              description="ساخت اپلیکیشن‌های نیتیو و کراس‌پلتفرم برای iOS و Android."
+              readMore="مشاهده جزئیات"
+            />
+            <ServiceCard
+              icon={<SeoIcon />}
+              title="سئو و مارکتینگ"
+              description="افزایش بازدید و رتبه سایت شما در گوگل با استراتژی‌های مدرن."
+              readMore="شروع کنید"
+            />
+            {/* سایر کارت‌ها را اینجا اضافه کن */}
+          </div>
         </div>
-      </div>
+
+        {/* اسلایدر نظرات باید خارج از گرید خدمات باشد تا تمام‌عرض شود */}
+        
+        <div className="w-full mt-20 flex flex-col items-center px-4">
+        <AnimatedTitle title="نظرات مشتریان" />
+
+             <TestimonialSlider />
+        </div>
+      </main>
     </>
   );
 }

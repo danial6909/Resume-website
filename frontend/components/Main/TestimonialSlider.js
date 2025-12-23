@@ -34,13 +34,14 @@ const testimonials = [
 
 const TestimonialSlider = () => {
   return (
-    <div className="w-full bg-[#0f0f0f] py-20 px-4" dir="rtl">
-      <div className="max-w-6xl mx-auto">
+    <div className="w-full  py-20 px-4" dir="rtl">
+      <div className="max-w-7xl mx-auto">
         
         <Swiper
           modules={[Pagination, Autoplay]}
           spaceBetween={30}
           slidesPerView={1}
+          
           autoplay={{ delay: 3000 }}
           pagination={{ clickable: true }}
           breakpoints={{
@@ -50,7 +51,7 @@ const TestimonialSlider = () => {
         >
           {testimonials.map((item, index) => (
             <SwiperSlide key={index}>
-              <div className="bg-[#161616] rounded-2xl p-8 pt-12 relative border border-gray-800 flex flex-col items-center text-center">
+              <div className="bg-background rounded-sm p-8 pt-12 relative border border-gray-800 flex flex-col items-center text-center">
                 
                 {/* آیکون کوتیشن بالا */}
                 <div className="absolute -top-5 right-10 ">
