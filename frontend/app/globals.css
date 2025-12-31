@@ -16,6 +16,16 @@
   --color-text-main: oklch(from var(--text-main) l c h);
   --color-text-faded: oklch(from var(--text-faded) l c h);
   --color-text-muted: oklch(from var(--text-muted) l c h);
+
+  --animate-slide-down: slideDown 0.4s ease-out;
+}
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 /* ---------------------------------------
@@ -24,7 +34,8 @@
 :root {
   /* Light Theme */
   --primary-accent: #00bc91;
-  --secondary-accent: #40c9ff;
+  --secondary-accent: #3b82f6;
+  /* --secondary-accent: #40c9ff; */
 
   --background: #ffffff;
   --surface: #f5f5f5;
@@ -41,7 +52,7 @@
 html.dark {
 
   --primary-accent: #00bc91;
-  --secondary-accent: #40c9ff;
+  --secondary-accent: #3b82f6;
   
   --background: #0f0f0f;
   --surface: #1a1a1a;

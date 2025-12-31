@@ -26,7 +26,7 @@
     /* استفاده از متغیر */
     linear-gradient(var(--color-dark-bg), var(--color-dark-bg)),
     /* استفاده از متغیرها برای گرادیانت بوردر */
-    linear-gradient(145deg, transparent 35%, var(--color-primary-accent), var(--color-secondary-accent));
+    linear-gradient(145deg, transparent 35%, var(--color-primary), var(--color-secondary));
   border: 2px solid transparent;
   border-radius: 16px;
   padding: 32px 24px;
@@ -52,7 +52,7 @@
   height: 2px;
   width: 40px;
   /* استفاده از متغیرها */
-  background: linear-gradient(to right, var(--color-primary-accent), var(--color-secondary-accent));
+  background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
   margin: 8px auto;
   border-radius: 1px;
 }
@@ -76,7 +76,7 @@
   right: 16px;
   font-size: 14px;
   /* استفاده از متغیر */
-  color: var(--color-text-muted); 
+  color: var(--color-muted); 
   pointer-events: none;
   transition: all 0.3s ease;
   font-weight: 500;
@@ -91,7 +91,7 @@
   padding: 0 4px;
   border-radius: 2px;
   /* استفاده از متغیر */
-  color: var(--color-primary-accent); 
+  color: var(--color-primary); 
 }
 
 .formInput {
@@ -113,9 +113,9 @@
 
 .formInput:focus {
   /* استفاده از متغیر */
-  border-color: var(--color-primary-accent); 
+  border-color: var(--color-primary); 
   /* استفاده از متغیر برای سایه (با opacity) */
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-accent) 20%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 20%, transparent);
 }
 
 .formRow {
@@ -129,26 +129,26 @@
   display: flex;
   align-items: center;
   /* استفاده از متغیر */
-  color: var(--color-text-muted); 
+  color: var(--color-muted); 
   cursor: pointer;
 }
 
 .remember input {
   margin-left: 6px; /* راست‌چین: چک‌باکس سمت چپ متن */
   /* استفاده از متغیر */
-  accent-color: var(--color-primary-accent); 
+  accent-color: var(--color-primary); 
 }
 
 .forgot {
   /* استفاده از متغیر */
-  color: var(--color-secondary-accent); 
+  color: var(--color-secondary); 
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .forgot:hover {
   /* استفاده از متغیر */
-  color: var(--color-third-accent); 
+  color: var(--color-third); 
   text-decoration: underline;
 }
 
@@ -160,7 +160,7 @@
   /* استفاده از متغیر */
   background: var(--color-dark-surface); 
   /* استفاده از متغیر */
-  color: var(--color-text-faded); 
+  color: var(--color-faded); 
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
@@ -177,7 +177,7 @@
   width: 100%;
   height: 100%;
   /* استفاده از متغیر (با opacity داخلی) */
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-third-accent) 20%, transparent), transparent);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-third-) 20%, transparent), transparent);
   transition: right 0.6s; /* تغییر به right */
 }
 
@@ -187,7 +187,7 @@
   /* استفاده از متغیر */
   color: var(--color-text-light); 
   /* استفاده از متغیر برای سایه */
-  box-shadow: 0 0 12px color-mix(in srgb, var(--color-third-accent) 40%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-third) 40%, transparent);
   transform: translateY(-2px);
 }
 
@@ -198,7 +198,7 @@
 .formSubmitBtn:active {
   transform: scale(0.96) translateY(0);
   /* استفاده از متغیر برای سایه */
-  box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary-accent) 60%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary) 60%, transparent);
 }
 
 .formSubmitBtn:disabled {
@@ -221,7 +221,7 @@
   text-align: center;
   font-size: 13px;
   /* استفاده از رنگی که به تم نزدیک است (555 را به چیزی نزدیک به muted تغییر دادیم) */
-  color: color-mix(in srgb, var(--color-text-muted) 70%, transparent);
+  color: color-mix(in srgb, var(--color-muted) 70%, transparent);
   margin-top: 16px;
 }
 

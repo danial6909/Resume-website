@@ -6,9 +6,9 @@
   */
 
   /* Primary Accent Colors (رنگ‌های اصلی برجسته) */
-  --color-primary-accent: #e81cff; /* بنفش روشن / ماژنتا */
-  --color-secondary-accent: #40c9ff; /* فیروزه‌ای / آبی روشن */
-  --color-third-accent: #64ffda; /* سبز روشن/آکوا (استفاده شده در hover) */
+  --color-primary: #00bc91; /* بنفش روشن / ماژنتا */
+  --color-secondary: #3b82f6; /* فیروزه‌ای / آبی روشن */
+  --color-third: #64ffda; /* سبز روشن/آکوا (استفاده شده در hover) */
 
   /* Background & Base Colors (رنگ‌های پس‌زمینه و پایه تیره) */
   --color-dark-bg:  #000; /* پس‌زمینه کاملا تیره */
@@ -18,7 +18,7 @@
 
   /* Text & Utility Colors (رنگ متن و کمکی) */
   --color-text-light: white; /* متن روشن */
-  --color-text-faded: #ccc; /* متن کمرنگ‌تر */
-  --color-text-muted: #717171; /* متن محو شده */
+  --color-faded: #ccc; /* متن کمرنگ‌تر */
+  --color-muted: #717171; /* متن محو شده */
 }
 

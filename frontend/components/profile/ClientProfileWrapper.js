@@ -9,6 +9,7 @@ import ChangePasswordForm from "./ChangePasswordForm";
 import NotificationsTab from "./NotificationsTab";
 import LogoutModal from "./LogoutModal";
 import axiosInstance from "@/utils/axiosInstance";
+import { useAuth } from "@/context/AuthContext";
 
 // کامپوننت برای افکت نورانی پس‌زمینه
 const AuroraBackground = () => (
@@ -30,7 +31,7 @@ export default function ClientProfileWrapper({ initialData }) {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState(null);
-
+const { logout } = useAuth();
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -110,14 +111,14 @@ export default function ClientProfileWrapper({ initialData }) {
     }
   };
 
-  const handleLogoutConfirm = () => {
-    console.log("خروج از حساب...");
+const handleLogoutConfirm = async () => {
     setIsLogoutModalOpen(false);
-    alert("شما با موفقیت از حساب کاربری خارج شدید.");
+    await logout(); // اجرای منطق خروج
+    // پیام موفقیت یا ریدایرکت توسط خود تابع logout انجام می‌شود
   };
 
   return (
-    <div className="relative bg-background text-text-main min-h-screen p-2 sm:p-6 md:p-8 ">
+    <div className="relative bg-background text-text-main min-h-screen p-2 sm:p-6 md:p-8 mt-16">
       <AuroraBackground />
       <LogoutModal
         isOpen={isLogoutModalOpen}
