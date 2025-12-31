@@ -428,7 +428,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Download } from "lucide-react";
-import OpenAI from "openai";
+
 // ایمپورت کامپوننت‌های ساخته شده
 import SectionHeader from "./SectionHeader";
 import PersonalDetails from "./PersonalDetails";
