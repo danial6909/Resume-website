@@ -126,7 +126,7 @@ export default function Header() {
       {isSticky && <div className="h-16 w-full" />}
 
       <header
-        className={`top-0 bg-background shadow-sm border-b border-border   w-full h-16 z-30 transition-all duration-300 ease-in-out
+        className={`top-0 bg-background shadow-sm border-b border-border   w-full h-16 z-30 transition-all duration-300 ease-in-out 
           ${
             isSticky
               ? "fixed top-0 animate-slide-down bg-background/80 backdrop-blur-lg shadow-md border-b border-border"

@@ -588,7 +588,7 @@ export default function ResumeSection() {
 
   return (
     <section
-      className="bg-background text-text-main py-16 px-6 md:px-12 lg:px-20 font-sans selection:bg-primary-accent/40 mt-16"
+      className="bg-background text-text-main py-10 px-6 md:px-12 lg:px-20 font-sans selection:bg-primary-accent/40 "
       dir="rtl"
     >
       <div className="container mx-auto max-w-7xl">
