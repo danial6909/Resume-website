@@ -116,7 +116,7 @@ const ServiceCard = ({ icon, title, description, readMore }) => {
     return (
         <motion.div
             dir="rtl"
-            className="relative p-px border-2 border-border font-sans overflow-hidden group rounded-sm"
+            className="relative p-px border-2 border-border font-sans overflow-hidden group rounded-sm "
             // حذف تمام rounded-[16px] و جایگزینی با rounded-none
             variants={cardVariants}
             initial="hidden"
