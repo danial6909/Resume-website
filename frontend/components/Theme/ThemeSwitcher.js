@@ -4,11 +4,10 @@ import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { SunMedium, Moon } from "lucide-react";
 
-export default function ThemeSwitcher() {
+export default function ThemeSwitcher({ isHeaderSticky }) {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
 
-  // برای جلوگیری از مشکل Hydration، باید صبر کنیم تا کامپوننت در کلاینت Mount شود
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -21,9 +20,15 @@ export default function ThemeSwitcher() {
     <button
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       aria-label="Toggle Dark Mode"
-     className="p-2 rounded-full transition duration-800 hover:rotate-360
-                 text-gray-600 hover:bg-gray-200
-                 dark:text-primary-accent dark:hover:bg-border cursor-pointer ease-out hover:scale-105"
+      className={`p-2 rounded-full transition-all duration-500 ease-out cursor-pointer hover:rotate-[360deg] hover:scale-110
+        ${
+          isHeaderSticky
+            ? // حالت Sticky: تابع تم (رنگ متغیر)
+              "text-black-200  dark:text-primary-accent hover:bg-gray-200 dark:hover:bg-border"
+            : // حالت عادی (بالای صفحه): رنگ ثابت (مثلاً طلایی یا سفید که روی زمینه تیره قشنگ باشد)
+              "text-primary-accent hover:bg-white/10"
+        }
+      `}
     >
       {theme === "dark" ? <SunMedium size={20} /> : <Moon size={20} />}
     </button>
