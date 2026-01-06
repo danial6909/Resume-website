@@ -55,7 +55,7 @@ export default function SectionHeader({
               <motion.div
                 layoutId="tabBg"
                 className={`absolute inset-0 ${
-                  type === "danial" ? "bg-blue-600" : "bg-emerald-600"
+                  type === "danial" ?"bg-emerald-600 ":"bg-blue-600" 
                 } rounded-xl -z-10`}
                 transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
               />

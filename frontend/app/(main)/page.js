@@ -6,6 +6,12 @@ import ServiceCard from "@/components/Main/ServiceCard";
 import AnimatedTitle from "@/components/AnimatedTitle";
 import StepWork from "@/components/Main/StepWork";
 import TestimonialSlider from "@/components/Main/TestimonialSlider";
+import InfiniteMarquee from "@/components/Main/InfiniteMarquee"
+import HeroSlider from "@/components/Header/HeroSlider";
+
+// داده‌های نمونه برای کارت‌ها (مثلاً نظرات مشتریان یا تکنولوژی‌ها)
+
+
 export default function HomePage() {
   const MobileIcon = () => (
     <svg
@@ -58,14 +64,17 @@ export default function HomePage() {
 
   return (
     <>
+
+    <HeroSlider/>
+    <div className="w-full h-screen  z-1"></div>
       {/* slider */}
-      <Image
+      {/* <Image
         quality={80} // کیفیت 80 برای وب کاملا مناسب و بهینه‌تر است
         src={background9}
         alt="Background"
         className="w-full h-screen top-0 left-0 -z-10"
         priority
-      />
+      /> */}
       {/* <Image
         quality={80} // کیفیت 80 برای وب کاملا مناسب و بهینه‌تر است
         src={back}
@@ -73,7 +82,7 @@ export default function HomePage() {
         className="w-full h-screen   absolute  "
       /> */}
     
-     <main className="flex flex-col items-center justify-center pt-20 pb-20 overflow-x-hidden ">
+     <main className="flex flex-col items-center justify-center pt-5 pb-20 overflow-x-hidden ">
         <AnimatedTitle title="خدمات ما" />
 
         {/* بخش خدمات - اصلاح گرید */}
@@ -118,6 +127,12 @@ export default function HomePage() {
             {/* سایر کارت‌ها را اینجا اضافه کن */}
           </div>
         </div>
+
+       {/* بخش Marquee */}
+       
+            <InfiniteMarquee direction="left" speed={25} />
+           
+        
 
         {/* اسلایدر نظرات باید خارج از گرید خدمات باشد تا تمام‌عرض شود */}
         

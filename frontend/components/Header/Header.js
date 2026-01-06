@@ -123,7 +123,7 @@ export default function Header() {
         یک placeholder نامرئی که فقط زمانی که هدر sticky است،
         فضا اشغال می‌کند تا از پرش محتوا به بالا جلوگیری شود.
       */}
-      {isSticky && <div className="h-16 w-full" />}
+      {/* {isSticky && <div className="h-16 w-full" />} */}
 
       <header
         className={`top-0 bg-background shadow-sm border-b border-border   w-full h-16 z-30 transition-all duration-300 ease-in-out 
