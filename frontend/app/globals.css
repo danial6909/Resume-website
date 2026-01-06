@@ -63,3 +63,37 @@ html.dark {
   --text-muted: #fff3;
 }
 
+
+
+
+
+
+
+
+/* scroll bar */
+body {
+ 
+  --sb-size: 9px;
+}
+
+body::-webkit-scrollbar {
+  width: var(--sb-size)
+}
+
+body::-webkit-scrollbar-track {
+  background: var(--surface);
+  border-radius: 17px;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: var(--primary-accent);
+  border-radius: 17px;
+  border: 1px solid var(--border);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  body {
+    scrollbar-color: var(--primary-accent)
+                     var(--surface);
+  }
+}
