@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -132,13 +131,30 @@ export default function Header() {
             <ThemeSwitcher isSticky={isSticky} />
 
             {user ? (
-              <span
-                className={`text-sm font-medium ${
-                  isTransparent ? "text-white" : "text-foreground"
+              <Link
+                href="/profile"
+                className={`relative flex items-center justify-center w-13 h-13 rounded-full border-2 mr-2.5 transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-sm overflow-hidden ${
+                  isTransparent
+                    ? "border-white/30 bg-white/10 text-white hover:bg-white/20"
+                    : "border-primary-accent/20 bg-primary-accent/10 text-primary-accent hover:bg-primary-accent/20"
                 }`}
               >
-                {user.username}
-              </span>
+                {user.image ? (
+                  <Image
+                    src={user.image}
+                    alt={user.username}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <span className="text-sm font-bold uppercase tracking-tighter">
+                    {user.username?.charAt(0) || "U"}
+                  </span>
+                )}
+
+                {/* یک نقطه سبز کوچک برای نشان دادن وضعیت آنلاین بودن (اختیاری) */}
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-background rounded-full"></span>
+              </Link>
             ) : (
               <div className={isTransparent ? "dark" : ""}>
                 <LoginBtn />
