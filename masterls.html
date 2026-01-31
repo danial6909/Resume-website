@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Mastermind Solver - Step-by-Step Simulated Annealing</title>
+    <style>
+        :root {
+            --bg: #f0f2f5;
+            --panel: #ffffff;
+            --primary: #3498db;
+        }
+        body { font-family: Tahoma, sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
+        .card { background: var(--panel); padding: 25px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); width: 450px; text-align: center; }
+        
+        .peg-row { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
+        .peg { 
+            width: 40px; height: 40px; border-radius: 50%; border: 3px solid #ddd; 
+            cursor: pointer; transition: 0.2s; box-shadow: inset 0 -3px 5px rgba(0,0,0,0.2);
+        }
+        
+        button { 
+            background: #e74c3c;
+            color: white; border: none; padding: 12px 25px; 
+            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; width: 100%;
+        }
+        button:hover { background: #c0392b; }
+        button:disabled { background: #bdc3c7; }
+
+        .status-box { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; border: 1px solid #eee; }
+        #history { max-height: 300px; overflow-y: auto; margin-top: 15px; padding-right: 5px; }
+        .h-row { 
+            display: flex; justify-content: space-between; padding: 8px; 
+            border-bottom: 1px solid #f1f1f1; align-items: center; background: #fff; margin-bottom: 5px; border-radius: 5px;
+        }
+        .s-peg { width: 18px; height: 18px; border-radius: 50%; display: inline-block; margin: 0 2px; border: 1px solid #ccc; }
+        .feedback-icons { font-size: 12px; color: #555; text-align: right; }
+        .attempt-tag { background: #e67e22; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>حل‌کننده با جستجوی محلی (SA)</h2>
+    <p style="font-size: 0.85rem; color: #666;">**روش:** الگوریتم تبرید شبیه‌سازی‌شده. هر حرکت پذیرفته‌شده ثبت می‌شود.</p>
+
+    <div class="peg-row" id="target-ui">
+        <div class="peg" data-id="0"></div>
+        <div class="peg" data-id="1"></div>
+        <div class="peg" data-id="2"></div>
+        <div class="peg" data-id="3"></div>
+    </div>
+
+    <button id="run-btn">شروع جستجوی محلی</button>
+
+    <div class="status-box">
+        <div>دما: <span id="temp-out">0</span> | پین‌های صحیح (مشکی): <span id="black-out">0</span></div>
+        <div class="peg-row" id="guess-ui" style="margin: 10px 0;">
+            <div class="peg" style="width:30px; height:30px; cursor:default;"></div>
+            <div class="peg" style="width:30px; height:30px; cursor:default;"></div>
+            <div class="peg" style="width:30px; height:30px; cursor:default;"></div>
+            <div class="peg" style="width:30px; height:30px; cursor:default;"></div>
+        </div>
+        <div id="stat-text" style="font-size:0.9rem;">آماده...</div>
+    </div>
+
+    <div id="history"></div>
+</div>
+
+<script>
+    const PALETTE = ['#e74c3c', '#2ecc71', '#3498db', '#f1c40f']; // قرمز، سبز، آبی، زرد
+    let target = [0, 1, 2, 3];
+    let running = false;
+    let stepCount = 0; // شمارنده گام‌های اصلی (حرکت پذیرفته‌شده)
+
+    // مقداردهی اولیه هدف
+    const tPegs = document.querySelectorAll('#target-ui .peg');
+    tPegs.forEach((p, i) => {
+        p.style.backgroundColor = PALETTE[target[i]];
+        p.onclick = () => {
+            if(running) return;
+            target[i] = (target[i] + 1) % 4; 
+            p.style.backgroundColor = PALETTE[target[i]];
+        };
+    });
+
+    // تابع اصلی فیدبک
+    function getFeedback(guess, actual) {
+        let black = 0;
+        let white = 0;
+        let gCopy = [...guess];
+        let aCopy = [...actual];
+
+        // Black Pins
+        for (let i = 0; i < 4; i++) {
+            if (gCopy[i] === aCopy[i]) {
+                black++;
+                gCopy[i] = aCopy[i] = null;
+            }
+        }
+        
+        // White Pins
+        for (let i = 0; i < 4; i++) {
+            if (gCopy[i] !== null) {
+                let foundIdx = aCopy.indexOf(gCopy[i]);
+                if (foundIdx !== -1) {
+                    white++;
+                    aCopy[foundIdx] = null;
+                }
+            }
+        }
+        return { black, white };
+    }
+
+    // تابع Energy/Cost (4 - Black Pins)
+    function getEnergy(code) {
+        return 4 - getFeedback(code, target).black;
+    }
+
+    async function solve() {
+        running = true;
+        document.getElementById('run-btn').disabled = true;
+        document.getElementById('history').innerHTML = '';
+        stepCount = 0;
+        
+        // State اولیه
+        let current = [0, 0, 0, 0].map(() => Math.floor(Math.random() * 4));
+        let curEnergy = getEnergy(current);
+        let T = 10.0;
+        const cooling = 0.90;
+
+        const gPegs = document.querySelectorAll('#guess-ui .peg');
+        const MAX_ATTEMPTS = 250; 
+        let internalAttempts = 0;
+
+        // ثبت وضعیت شروع
+        let fbStart = getFeedback(current, target);
+        log(current, fbStart, 0, true);
+        
+        while (T > 0.001 && curEnergy > 0 && internalAttempts < MAX_ATTEMPTS) {
+            internalAttempts++;
+            
+            // 1. ایجاد همسایه
+            let next = [...current];
+            next[Math.floor(Math.random() * 4)] = Math.floor(Math.random() * 4);
+            let nextEnergy = getEnergy(next);
+            
+            let delta = nextEnergy - curEnergy;
+            
+            // 2. قانون پذیرش Simulated Annealing
+            if (delta < 0 || Math.random() < Math.exp(-delta / T)) {
+                
+                // --- حرکت پذیرفته شد ---
+                current = next;
+                curEnergy = nextEnergy;
+                stepCount++;
+                
+                // 3. بروزرسانی UI و ثبت در تاریخچه
+                let fb = getFeedback(current, target);
+                log(current, fb, stepCount, false); // ثبت مرحله جدید در لاگ
+            }
+
+            // بروزرسانی وضعیت کلی
+            document.getElementById('temp-out').innerText = T.toFixed(3);
+            document.getElementById('black-out').innerText = (4 - curEnergy);
+            document.getElementById('stat-text').innerText = `تلاش‌های SA: ${internalAttempts}`;
+            gPegs.forEach((p, i) => p.style.backgroundColor = PALETTE[current[i]]);
+            
+
+            await new Promise(r => setTimeout(r, 100)); // کاهش سرعت برای دیدن مراحل
+            T *= cooling;
+        }
+
+        if(curEnergy === 0) {
+             alert(`🎉 موفقیت! کد در ${stepCount} گام پذیرفته‌شده توسط SA پیدا شد.`);
+        } else {
+            alert(`⛔ شکست. پس از ${internalAttempts} تلاش، کد پیدا نشد. (آخرین خطا: ${curEnergy})`);
+        }
+        
+        running = false;
+        document.getElementById('run-btn').disabled = false;
+    }
+
+    function log(code, fb, step, isStart) {
+        const h = document.getElementById('history');
+        const row = document.createElement('div');
+        row.className = 'h-row';
+        let pegs = code.map(c => `<div class="s-peg" style="background:${PALETTE[c]}"></div>`).join('');
+        
+        const tagText = isStart ? "شروع" : `گام ${step}`;
+        const tagColor = isStart ? "#3498db" : "#e67e22";
+
+        row.innerHTML = `
+            <div><span class="attempt-tag" style="background:${tagColor}">${tagText}</span> ${pegs}</div>
+            <div class="feedback-icons">
+                ✅ مشکی (جای درست): **${fb.black}** <br> 
+                🎨 سفید (رنگ درست): **${fb.white}**
+            </div>
+        `;
+        h.prepend(row);
+        // اسکرول کردن به بالا برای دیدن آخرین حرکت
+        h.scrollTop = 0; 
+    }
+
+    document.getElementById('run-btn').onclick = solve;
+</script>
+</body>
+</html>
