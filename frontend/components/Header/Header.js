@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
@@ -7,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import MenuItem from "./MenuItem";
 import ThemeSwitcher from "@/components/Theme/ThemeSwitcher";
 import LoginBtn from "./LoginBtn";
-import logo from "@/public/logo/logo.jpg";
+import Logo from "./Logo";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react"; // وارد کردن آیکون همبرگری و بستن
 
@@ -65,6 +64,7 @@ export default function Header() {
         className={`w-full h-16 z-50 transition-all duration-300 ease-in-out border-b ${getHeaderStyles()}`}
       >
         <div className="container mx-auto px-4 h-full flex justify-between items-center">
+          
           {/* بخش سمت راست: لوگو و دکمه موبایل */}
           <div className="flex items-center gap-4">
             {/* دکمه همبرگری فقط در موبایل (md:hidden) */}
@@ -103,13 +103,8 @@ export default function Header() {
             </button>
 
             {/* لوگو */}
-            <Link href="/">
-              <Image
-                src={logo}
-                alt="Logo"
-                className="w-20 h-10 object-contain"
-              />
-            </Link>
+            <Logo />
+
           </div>
 
           {/* منوی دسکتاپ (در موبایل مخفی: hidden md:block) */}
@@ -163,6 +158,7 @@ export default function Header() {
           </div>
         </div>
       </header>
+
       {/* --- منوی موبایل Full-Screen با پالت رنگی اختصاصی --- */}
       <div
         className={`fixed inset-0 z-[60] md:hidden transition-all duration-700 ${
@@ -191,11 +187,9 @@ export default function Header() {
                   : "opacity-0 -translate-x-10"
               }`}
             >
-              <Image
-                src={logo}
-                alt="Logo"
-                className="w-12 h-auto grayscale brightness-200"
-              />
+              
+            <Logo/>
+
             </div>
 
             <button

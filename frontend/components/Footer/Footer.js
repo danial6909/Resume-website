@@ -68,7 +68,7 @@ const Footer = () => {
         >
           <h3 className="text-lg font-bold text-foreground">دسترسی سریع</h3>
           <ul className="space-y-3">
-            {["صفحه اصلی", "پروژه‌ها", "مهارت‌ها", "درباره من"].map((item) => (
+            {["صفحه اصلی", "پروژه‌ها", "مهارت‌ها", "درباره ما"].map((item) => (
               <li key={item}>
                 <a
                   href="#"

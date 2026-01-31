@@ -6,11 +6,12 @@ import ServiceCard from "@/components/Main/ServiceCard";
 import AnimatedTitle from "@/components/AnimatedTitle";
 import StepWork from "@/components/Main/StepWork";
 import TestimonialSlider from "@/components/Main/TestimonialSlider";
-import InfiniteMarquee from "@/components/Main/InfiniteMarquee"
+import InfiniteMarquee from "@/components/Main/InfiniteMarquee";
 import HeroSlider from "@/components/Header/HeroSlider";
+import NumberWork from "@/components/Main/NumberWork";
+import ProjectRoadmap from "@/components/Main/ProjectRoadmap";
 
 // داده‌های نمونه برای کارت‌ها (مثلاً نظرات مشتریان یا تکنولوژی‌ها)
-
 
 export default function HomePage() {
   const MobileIcon = () => (
@@ -64,9 +65,8 @@ export default function HomePage() {
 
   return (
     <>
-
-    <HeroSlider/>
-    <div className="w-full h-screen  z-1"></div>
+      <HeroSlider />
+      <div className="w-full h-screen  z-1"></div>
       {/* slider */}
       {/* <Image
         quality={80} // کیفیت 80 برای وب کاملا مناسب و بهینه‌تر است
@@ -81,8 +81,8 @@ export default function HomePage() {
         alt="Background"
         className="w-full h-screen   absolute  "
       /> */}
-    
-     <main className="flex flex-col items-center justify-center pt-5 pb-20 overflow-x-hidden ">
+
+      <main className="flex flex-col items-center justify-center pt-5 pb-20 overflow-x-hidden ">
         <AnimatedTitle title="خدمات ما" />
 
         {/* بخش خدمات - اصلاح گرید */}
@@ -128,19 +128,26 @@ export default function HomePage() {
           </div>
         </div>
 
-       {/* بخش Marquee */}
-       
-            <InfiniteMarquee direction="left" speed={25} />
-           
-        
+        <ProjectRoadmap />
+
+        <div className=" max-w-7xl w-full ">
+          <NumberWork />
+        </div>
 
         {/* اسلایدر نظرات باید خارج از گرید خدمات باشد تا تمام‌عرض شود */}
-        
-        <div className="w-full mt-20 flex flex-col items-center px-4">
-        <AnimatedTitle title="نظرات مشتریان" />
 
-             <TestimonialSlider />
+        <div className="w-full mt-20 flex flex-col items-center px-4">
+          <AnimatedTitle title="نظرات مشتریان" />
+
+          <TestimonialSlider />
         </div>
+
+        {/* بخش Marquee */}
+
+        {/* بخش Marquee */}
+<div className=""> {/* اینجا نباید هیچ کلاس عجیبی مثل flex یا items-start باشد */}
+   <InfiniteMarquee direction="left" speed={450} />
+</div>
       </main>
     </>
   );
