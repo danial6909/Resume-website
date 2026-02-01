@@ -25,7 +25,7 @@ const InfiniteMarquee = () => {
       <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none"></div>
 
       <Marquee
-        speed={550}
+        speed={60}
         pauseOnHover={true}
         gradient={false}
         // autoFill={false}  <-- این رو کلا ننویس یا false بزار

@@ -65,17 +65,13 @@ import axiosInstance from "../utils/axiosInstance";
 import { useRouter } from 'next/navigation';
 import { useAuth } from "../context/AuthContext"; // <-- اضافه کردن این خط
 
+// frontend/hooks/useRegisterLogic.js
 export function useRegisterLogic() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
-    const { setUser } = useAuth(); // <-- گرفتن تابع setUser برای آپدیت استیت سراسری
+    const { setUser } = useAuth();
 
-    const register = useCallback(async (username, email, password, password2) => {
-        if (password !== password2) {
-            alert('رمز عبور و تکرار آن یکسان نیستند.');
-            return; 
-        }
-        
+    const registerUser = useCallback(async (username, email, password, password2) => {
         setLoading(true);
         try {
             const response = await axiosInstance.post('/account/register/', { 
@@ -85,33 +81,17 @@ export function useRegisterLogic() {
                 password2
             });
             
-            // ✅ نکته طلایی: اگر بک‌اِند بعد از ثبت‌نام، اطلاعات کاربر را برمی‌گرداند:
             if (response.data && response.data.user) {
-                setUser(response.data.user); // آپدیت کردن هدر و کل اپلیکیشن
+                setUser(response.data.user);
             }
-
-            console.log('Registration successful:', response.data);
-            alert('ثبت‌نام با موفقیت انجام شد!');
-            router.push('/');
+            return response.data;
         } catch (error) {
-            console.error('Registration failed:', error);
-            const serverError = error.response?.data;
-            let errorMessage = 'ثبت‌نام ناموفق بود. لطفاً دوباره امتحان کنید.';
-            
-            if (serverError) {
-                // مدیریت پیام‌های خطای بک‌اِند (مثلاً جنگو)
-                if (serverError.email) errorMessage = `خطای ایمیل: ${serverError.email}`;
-                else if (serverError.username) errorMessage = `نام کاربری تکراری است یا خطا دارد.`;
-                else if (serverError.password) errorMessage = `خطای رمز عبور: ${serverError.password}`;
-            }
-            alert(errorMessage);
+            // ارور را به کامپوننت پرتاب می‌کنیم تا setError بتواند آن را بگیرد
+            throw error; 
         } finally {
             setLoading(false);
         }
-    }, [router, setUser]); // اضافه کردن وابستگی‌ها
+    }, [router, setUser]);
 
-    return {
-        loading,
-        register,
-    };
+    return { loading, registerUser };
 }

@@ -1,148 +1,148 @@
-// components/SignUpForm/SignUpForm.js
-'use client';
+"use client";
 
-import { useRef, useEffect, useState } from 'react';
-import styles from './SignUpForm.module.css';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import styles from "./SignUpForm.module.css";
 import ParticlesBackground from "../LoginBackground/ParticlesBackground";
-import { useRegisterLogic } from '@/hooks/useRegisterLogic';
+import { useRegisterLogic } from "@/hooks/useRegisterLogic";
+
+// تعریف قوانین ثبت‌نام با Zod
+const signUpSchema = z.object({
+  username: z.string().min(3, "نام کاربری باید حداقل ۳ کاراکتر باشد"),
+  email: z.string().email("فرمت ایمیل صحیح نیست"),
+  password: z.string().min(6, "رمز عبور باید حداقل ۶ کاراکتر باشد"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "رمز عبور و تکرار آن یکسان نیستند",
+  path: ["confirmPassword"], // ارور را روی فیلد تکرار رمز نشان می‌دهد
+});
 
 export default function SignUpForm() {
-const { loading, register } = useRegisterLogic();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [isNameFocused, setIsNameFocused] = useState(false);
-  const [isEmailFocused, setIsEmailFocused] = useState(false);
-  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
-  const [isConfirmPasswordFocused, setIsConfirmPasswordFocused] = useState(false);
+  const { loading, registerUser } = useRegisterLogic();
+  
+  // استیت‌های فوکوس برای انیمیشن لبل‌ها
+  const [focusFields, setFocusFields] = useState({});
 
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setError,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: { username: "", email: "", password: "", confirmPassword: "" }
+  });
 
+  const values = watch();
 
-const handleSubmit = (e) => {
-        e.preventDefault();
+  const handleFocus = (field) => setFocusFields(prev => ({ ...prev, [field]: true }));
+  const handleBlur = (field) => setFocusFields(prev => ({ ...prev, [field]: false }));
 
-        // اعتبارسنجی اولیه تطابق رمز عبور (به هوک منتقل شده اما در اینجا برای UI هم مفید است)
-        if (password !== confirmPassword) {
-            alert('❌ رمز عبور و تکرار آن یکسان نیستند.');
-            return;
+  const onSubmit = async (data) => {
+    try {
+      await registerUser(data.username, data.email, data.password, data.confirmPassword);
+      alert('ثبت‌نام با موفقیت انجام شد!');
+    } catch (error) {
+      if (error.response && error.response.data) {
+        const serverErrors = error.response.data;
+        // مدیریت هوشمند ارورهای بک‌اندر (جنگو یا Node)
+        if (serverErrors.username) setError("username", { message: "این نام کاربری قبلاً انتخاب شده است" });
+        if (serverErrors.email) setError("email", { message: "این ایمیل قبلاً ثبت‌نام شده است" });
+        if (!serverErrors.username && !serverErrors.email) {
+          setError("root", { message: "ثبت‌نام ناموفق بود. دوباره تلاش کنید." });
         }
-
-        // فراخوانی تابع register از هوک
-        // این تابع داخلی هوک، عملیات setLoading(true) را انجام می‌دهد
-        register(name, email, password, confirmPassword);
-        
-        // توجه: نیازی به دستکاری مستقیم DOM برای دکمه (btn.disabled/textContent) نیست،
-        // زیرا وضعیت loading از هوک به صورت خودکار رندر دکمه را مدیریت می‌کند.
-    };
+      } else {
+        setError("root", { message: "خطا در اتصال به شبکه" });
+      }
+    }
+  };
 
   return (
     <div className={styles.container}>
-      {/* Canvas ذرات */}
       <ParticlesBackground />
 
       <div className={styles.formContainer}>
-        <h1 className={styles.formTitle}>ثبت‌نام  </h1>
+        <h1 className={styles.formTitle}>ثبت‌نام</h1>
         <div className={styles.formDivider}></div>
 
-        <form className={styles.form} onSubmit={handleSubmit}>
-          {/* نام */}
+        <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+          
+          {/* فیلد نام کاربری */}
           <div className={styles.formGroup}>
-            <label
-              htmlFor="name"
-              className={`${styles.formLabel} ${isNameFocused || name ? styles.floating : ''}`}
-            >
+            <label className={`${styles.formLabel} ${focusFields.username || values.username ? styles.floating : ''}`}>
               نام کاربری
             </label>
             <input
-              id="name"
-              type="text"
-              className={styles.formInput}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onFocus={() => setIsNameFocused(true)}
-              onBlur={() => setIsNameFocused(false)}
-            //   placeholder="علی احمدی"
-              required
+              {...register("username")}
+              onFocus={() => handleFocus("username")}
+              onBlur={() => handleBlur("username")}
+              className={`${styles.formInput} ${errors.username ? styles.inputError : ""}`}
               dir="ltr"
             />
+            {errors.username && <span className={styles.errorMessage}>{errors.username.message}</span>}
           </div>
 
-          {/* ایمیل */}
+          {/* فیلد ایمیل */}
           <div className={styles.formGroup}>
-            <label
-              htmlFor="email"
-              className={`${styles.formLabel} ${isEmailFocused || email ? styles.floating : ''}`}
-            >
-              ایمیل 
+            <label className={`${styles.formLabel} ${focusFields.email || values.email ? styles.floating : ''}`}>
+              ایمیل
             </label>
             <input
-              id="email"
-              type="email"
-              className={styles.formInput}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onFocus={() => setIsEmailFocused(true)}
-              onBlur={() => setIsEmailFocused(false)}
+              {...register("email")}
+              onFocus={() => handleFocus("email")}
+              onBlur={() => handleBlur("email")}
+              className={`${styles.formInput} ${errors.email ? styles.inputError : ""}`}
               placeholder="you@company.com"
-              required
               dir="ltr"
             />
+            {errors.email && <span className={styles.errorMessage}>{errors.email.message}</span>}
           </div>
 
-          {/* رمز عبور */}
+          {/* فیلد رمز عبور */}
           <div className={styles.formGroup}>
-            <label
-              htmlFor="password"
-              className={`${styles.formLabel} ${isPasswordFocused || password ? styles.floating : ''}`}
-            >
+            <label className={`${styles.formLabel} ${focusFields.password || values.password ? styles.floating : ''}`}>
               رمز عبور
             </label>
             <input
-              id="password"
               type="password"
-              className={styles.formInput}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onFocus={() => setIsPasswordFocused(true)}
-              onBlur={() => setIsPasswordFocused(false)}
+              {...register("password")}
+              onFocus={() => handleFocus("password")}
+              onBlur={() => handleBlur("password")}
+              className={`${styles.formInput} ${errors.password ? styles.inputError : ""}`}
               placeholder="••••••••"
-              required
               dir="ltr"
             />
+            {errors.password && <span className={styles.errorMessage}>{errors.password.message}</span>}
           </div>
 
-          {/* تکرار رمز عبور */}
+          {/* فیلد تکرار رمز عبور */}
           <div className={styles.formGroup}>
-            <label
-              htmlFor="confirmPassword"
-              className={`${styles.formLabel} ${isConfirmPasswordFocused || confirmPassword ? styles.floating : ''}`}
-            >
+            <label className={`${styles.formLabel} ${focusFields.confirmPassword || values.confirmPassword ? styles.floating : ''}`}>
               تکرار رمز عبور
             </label>
             <input
-              id="confirmPassword"
               type="password"
-              className={styles.formInput}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              onFocus={() => setIsConfirmPasswordFocused(true)}
-              onBlur={() => setIsConfirmPasswordFocused(false)}
+              {...register("confirmPassword")}
+              onFocus={() => handleFocus("confirmPassword")}
+              onBlur={() => handleBlur("confirmPassword")}
+              className={`${styles.formInput} ${errors.confirmPassword ? styles.inputError : ""}`}
               placeholder="••••••••"
-              required
               dir="ltr"
             />
+            {errors.confirmPassword && <span className={styles.errorMessage}>{errors.confirmPassword.message}</span>}
           </div>
 
-          <div className={styles.formRow}>
-            <label className={styles.remember}>
-              <input type="checkbox" required />
-              <span>شرایط و قوانین را می‌پذیرم</span>
-            </label>
-          </div>
+          {errors.root && (
+            <div className={styles.errorMessage} style={{ position: 'static', textAlign: 'center', marginBottom: '10px' }}>
+              {errors.root.message}
+            </div>
+          )}
 
-          <button type="submit" className={styles.formSubmitBtn}>
-            ثبت‌نام
+          <button type="submit" className={styles.formSubmitBtn} disabled={loading}>
+            {loading ? "در حال ثبت‌نام..." : "ثبت‌نام"}
           </button>
         </form>
 

@@ -91,20 +91,22 @@ export function useAuthLogic() {
         getMe();
     }, [getMe]);
 
-    const login = useCallback(async (username, password) => {
-        setLoading(true);
-        try {
-            const response = await axiosInstance.post('account/login/', { username, password });
-            // دیتایی که گفتی (id, username, email) اینجا در استیت ذخیره می‌شود
-            setUser(response.data.user);
-            router.push('/');
-        } catch (error) {
-            console.error('Login failed:', error);
-            alert('ورود ناموفق بود. دوباره تلاش کنید.');
-        } finally {
-            setLoading(false);
-        }
-    }, [router]);
+// frontend/hooks/useAuthLogic.js
+const login = useCallback(async (username, password) => {
+    setLoading(true);
+    try {
+        const response = await axiosInstance.post('account/login/', { username, password });
+        setUser(response.data.user);
+        router.push('/');
+        return { success: true }; // سیگنال موفقیت
+    } catch (error) {
+        console.error('Login failed:', error);
+        // ارور رو پرتاب می‌کنیم تا LoginForm بتونه توی catch خودش بگیردش
+        throw error; 
+    } finally {
+        setLoading(false);
+    }
+}, [router]);
 
 
     const logout = useCallback(async () => {
