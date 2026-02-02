@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import validate_email
 from rest_framework import serializers
@@ -53,7 +53,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         data['email'] = data['email'].lower().strip()
 
         if data['password'] != data['password2']:
-            raise serializers.ValidationError({'password': "passwords aren't matched"})
+            raise serializers.ValidationError({'password': ["passwords aren't matched"]})
 
         try:
             validate_password(data['password'], user=CustomUser)
@@ -69,7 +69,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         username = value.lower().strip()
         if CustomUser.objects.filter(username=username).exists():
-            raise serializers.ValidationError({'username' : 'This Username already exists'})
+            raise serializers.ValidationError({'username' : ['This Username already exists']})
         return username
 
     def create(self, validated_data):
@@ -81,6 +81,24 @@ class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField(style={'input_type': 'password'})
 
+    def validate_username(self, value):
+        username = value.lower().strip()
+
+        if not CustomUser.objects.filter(username=username).exists():
+            raise serializers.ValidationError({'username': ["این نام کاربری در سیستم وجود ندارد."]})
+        return username
+
+    def validate(self, data):
+        username = data.get('username')
+        password = data.get('password')
+
+        if username and password:
+            user = authenticate(username=username, password=password)
+
+            if not user:
+                raise serializers.ValidationError({'password': ["رمز عبور وارد شده اشتباه است."]})
+        return data
+
 
 class UserCredentialsUpdateSerializer(serializers.Serializer):
     email = serializers.EmailField(required=False, max_length=150)
@@ -90,7 +108,7 @@ class UserCredentialsUpdateSerializer(serializers.Serializer):
     def validate_current_password(self, value):
         user = self.context['request'].user
         if not user.check_password(value):
-            raise serializers.ValidationError({'current_password': "Your current password is incorrect."})
+            raise serializers.ValidationError({'current_password': ["Your current password is incorrect."]})
         return value
 
     def validate(self, data):
@@ -99,15 +117,15 @@ class UserCredentialsUpdateSerializer(serializers.Serializer):
 
         if new_username and new_username != user.username:
             if CustomUser.objects.filter(username=new_username).exists():
-                raise serializers.ValidationError({'username' : 'This Username already exists'})
+                raise serializers.ValidationError({'username' : ['This Username already exists']})
 
         new_email = data.get('email')
         if new_email and new_email != user.email:
             if CustomUser.objects.filter(email=new_email).exists():
-                raise serializers.ValidationError({'email' : 'This Email already exists'})
+                raise serializers.ValidationError({'email' : ['This Email already exists']})
 
         if not new_username and not new_email:
-            raise serializers.ValidationError('At least one of the username or email fields must be submitted for update.')
+            raise serializers.ValidationError({'non_field_errors': ['At least one of the username or email fields must be submitted for update.']})
 
         return data
 
@@ -131,7 +149,7 @@ class PasswordChangeSerializer(serializers.Serializer):
         user = self.context['request'].user
 
         if not user.check_password(value):
-            raise serializers.ValidationError({'old_password': "Your current password is incorrect."})
+            raise serializers.ValidationError({'old_password': ["Your current password is incorrect."]})
         return value
 
     def validate(self, data):
@@ -139,7 +157,7 @@ class PasswordChangeSerializer(serializers.Serializer):
         new_password_confirm = data.get('password2')
 
         if new_password != new_password_confirm:
-            raise serializers.ValidationError({'new_password_confirm': "Passwords don't match"})
+            raise serializers.ValidationError({'new_password_confirm': ["Passwords don't match"]})
 
         try:
             validate_password(new_password, self.context['request'].user)
@@ -148,7 +166,7 @@ class PasswordChangeSerializer(serializers.Serializer):
 
         return data
 
-    def save(self, request):
+    def save(self):
         user = self.context['request'].user
         user.set_password(self.validated_data['new_password'])
         user.save()
@@ -163,7 +181,7 @@ class PhoneNumberUpdateSerializer(serializers.Serializer):
         user = self.context['request'].user
 
         if not user.check_password(value):
-            raise serializers.ValidationError("Your current password is incorrect.")
+            raise serializers.ValidationError({"current_password": ["Your current password is incorrect."]})
         return value
 
     def validate_phone_number(self, value):
@@ -171,7 +189,7 @@ class PhoneNumberUpdateSerializer(serializers.Serializer):
 
         if value != user.phone_number:
             if CustomUser.objects.filter(phone_number=value).exists():
-                raise serializers.ValidationError('This phone number already exists.')
+                raise serializers.ValidationError({"phone_number": ['This phone number already exists.']})
         return value
 
     def update(self, instance, validated_data):
