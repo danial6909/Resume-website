@@ -16,6 +16,7 @@ export function useAuthLogic() {
             setUser(response.data.user);
         } catch (error) {
             console.log("کاربر لاگین نیست");
+            console.log(error);
             setUser(null);
         } finally {
             setLoading(false);

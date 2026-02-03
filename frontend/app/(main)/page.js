@@ -142,12 +142,14 @@ export default function HomePage() {
           <TestimonialSlider />
         </div>
 
-        {/* بخش Marquee */}
+    
 
         {/* بخش Marquee */}
-<div className=""> {/* اینجا نباید هیچ کلاس عجیبی مثل flex یا items-start باشد */}
-   <InfiniteMarquee direction="left" speed={450} />
-</div>
+        <div className="">
+       
+          {/* اینجا نباید هیچ کلاس عجیبی مثل flex یا items-start باشد */}
+          <InfiniteMarquee direction="left" speed={450} />
+        </div>
       </main>
     </>
   );
