@@ -51,9 +51,10 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     def validate(self, data):
         data['username'] = data['username'].lower().strip()
         data['email'] = data['email'].lower().strip()
+        password = data.get('password')
 
         if data['password'] != data['password2']:
-            raise serializers.ValidationError({'password': ["passwords aren't matched"]})
+            raise serializers.ValidationError({'password': ["پسورد ها باهم فرق میکنند."]})
 
         try:
             validate_password(data['password'], user=CustomUser)
@@ -64,12 +65,20 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             validate_email(data['email'])
         except DjangoValidationError as e:
             raise serializers.ValidationError({'email': list(e.messages)})
+
         return data
 
     def validate_username(self, value):
         username = value.lower().strip()
         if CustomUser.objects.filter(username=username).exists():
-            raise serializers.ValidationError({'username' : ['This Username already exists']})
+            raise serializers.ValidationError({'username' : ['این یوزرنیم از قبل انتخاب شده است.']})
+
+        if len(username) > 30:
+            raise serializers.ValidationError({'username': ["نام کاربری نباید بیشتر از ۳۰ کاراکتر باشد."]})
+
+        if len(username) < 3:
+            raise serializers.ValidationError({'username': ["نام کاربری نباید کمتر از ۳ حرف باشد."]})
+
         return username
 
     def create(self, validated_data):
@@ -108,7 +117,7 @@ class UserCredentialsUpdateSerializer(serializers.Serializer):
     def validate_current_password(self, value):
         user = self.context['request'].user
         if not user.check_password(value):
-            raise serializers.ValidationError({'current_password': ["Your current password is incorrect."]})
+            raise serializers.ValidationError({'current_password': ["پسورد فعلی وارد شده اشتباه است."]})
         return value
 
     def validate(self, data):
@@ -117,15 +126,21 @@ class UserCredentialsUpdateSerializer(serializers.Serializer):
 
         if new_username and new_username != user.username:
             if CustomUser.objects.filter(username=new_username).exists():
-                raise serializers.ValidationError({'username' : ['This Username already exists']})
+                raise serializers.ValidationError({'username' : ['این یوزرنیم در حال حاضر وجود دارد.']})
+
+            if len(new_username) > 30:
+                raise serializers.ValidationError({'username': ["نام کاربری نباید بیشتر از ۳۰ کاراکتر باشد."]})
+
+            if len(new_username) < 3:
+                raise serializers.ValidationError({'username': ["نام کاربری نباید کمتر از ۳ حرف باشد."]})
 
         new_email = data.get('email')
         if new_email and new_email != user.email:
             if CustomUser.objects.filter(email=new_email).exists():
-                raise serializers.ValidationError({'email' : ['This Email already exists']})
+                raise serializers.ValidationError({'email' : ['این ایمیل در حال حاضر وجود دارد.']})
 
         if not new_username and not new_email:
-            raise serializers.ValidationError({'non_field_errors': ['At least one of the username or email fields must be submitted for update.']})
+            raise serializers.ValidationError({'non_field_errors': ['حداقل یکی از فیلد های ایمیل یا یوزرنیم برای اپدیت باید پر شده باشد.']})
 
         return data
 
@@ -149,7 +164,7 @@ class PasswordChangeSerializer(serializers.Serializer):
         user = self.context['request'].user
 
         if not user.check_password(value):
-            raise serializers.ValidationError({'old_password': ["Your current password is incorrect."]})
+            raise serializers.ValidationError({'old_password': ["پسورد فعلی وارد شده اشتباه است."]})
         return value
 
     def validate(self, data):
@@ -157,7 +172,7 @@ class PasswordChangeSerializer(serializers.Serializer):
         new_password_confirm = data.get('password2')
 
         if new_password != new_password_confirm:
-            raise serializers.ValidationError({'new_password_confirm': ["Passwords don't match"]})
+            raise serializers.ValidationError({'new_password_confirm': ["پسورد ها باهم فرق میکنند."]})
 
         try:
             validate_password(new_password, self.context['request'].user)
@@ -181,7 +196,7 @@ class PhoneNumberUpdateSerializer(serializers.Serializer):
         user = self.context['request'].user
 
         if not user.check_password(value):
-            raise serializers.ValidationError({"current_password": ["Your current password is incorrect."]})
+            raise serializers.ValidationError({"current_password": ["پسورد فعلی وارد شده اشتباه است."]})
         return value
 
     def validate_phone_number(self, value):
@@ -189,7 +204,7 @@ class PhoneNumberUpdateSerializer(serializers.Serializer):
 
         if value != user.phone_number:
             if CustomUser.objects.filter(phone_number=value).exists():
-                raise serializers.ValidationError({"phone_number": ['This phone number already exists.']})
+                raise serializers.ValidationError({"phone_number": ['این شماره تلفن در حال حاضر وجود دارد.']})
         return value
 
     def update(self, instance, validated_data):

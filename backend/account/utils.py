@@ -1,8 +1,11 @@
+from django.core.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from rest_framework.views import exception_handler
 from rest_framework.response import Response
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
+import re
 
 
 
@@ -104,3 +107,30 @@ def delete_auth_cookies(response):
     response.delete_cookie('access_token', path='/')
     response.delete_cookie('refresh_token', path='/')
     return response
+
+
+# Password settings
+class SymbolValidator:
+    def validate(self, password, user=None):
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>|_]', password):
+            raise ValidationError(_("پسورد باید حداقل شامل یک کاراکتر خاص (مثل @، #، $ و...) باشد."),
+                                  code='password_no_symbol')
+
+    def get_help_text(self):
+        return _("پسورد شما باید حداقل شامل یک سمبل باشد.")
+
+
+class MaxLengthValidator:
+    def __init__(self, max_length=128):
+        self.max_length = max_length
+
+    def validate(self, password, user=None):
+        if len(password) > self.max_length:
+            raise ValidationError(
+                _("رمز عبور نمی‌تواند بیشتر از %(max_length)d کاراکتر باشد."),
+                code='password_too_long',
+                params={'max_length': self.max_length},
+            )
+
+    def get_help_text(self):
+        return _("رمز عبور شما باید حداکثر %(max_length)d کاراکتر باشد.") % {'max_length': self.max_length}
