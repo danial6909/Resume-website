@@ -41,6 +41,7 @@ class LoginAPIView(APIView):
     permission_classes = [AllowAny]
     throttle_classes = [ScopedRateThrottle] # we use this class for special throttling
     throttle_scope = 'auth_limit' # the throttle we want to be set we mention it
+    serializer_class = LoginSerializer
 
     @extend_schema(
         request=LoginSerializer,
