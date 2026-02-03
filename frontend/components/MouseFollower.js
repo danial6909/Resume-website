@@ -8,18 +8,19 @@ const MouseTrail = () => {
   const MAX_POINTS = 20; // تعداد نقطه‌های دنباله (هر چی بیشتر، دنباله بلندتر)
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      const newPoint = { x: e.clientX, y: e.clientY, id: Date.now() };
-      
-      setTrail((prevTrail) => {
-        // اضافه کردن نقطه جدید و حذف قدیمی‌ترین نقطه برای حفظ طول دنباله
-        const updatedTrail = [...prevTrail, newPoint];
-        if (updatedTrail.length > MAX_POINTS) {
-          return updatedTrail.slice(1);
-        }
-        return updatedTrail;
-      });
-    };
+const handleMouseMove = (e) => {
+  // استفاده از ترکیب زمان و رندوم برای ایجاد یک آیدی واقعاً منحصر به فرد
+  const newPoint = { 
+    x: e.clientX, 
+    y: e.clientY, 
+    id: `${Date.now()}-${Math.random()}` 
+  };
+  
+  setTrail((prev) => {
+    const updatedTrail = [...prev, newPoint];
+    return updatedTrail.slice(-MAX_POINTS);
+  });
+};
 
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
