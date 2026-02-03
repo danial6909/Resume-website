@@ -121,6 +121,7 @@ const ServiceCard = ({ icon, title, description, readMore }) => {
             variants={cardVariants}
             initial="hidden"
             animate="visible"
+            
             whileHover={{ 
                 scale: 1.02,
                 boxShadow: "0px 0px 30px -5px rgba(0, 188, 145, 0.35)",
@@ -131,7 +132,8 @@ const ServiceCard = ({ icon, title, description, readMore }) => {
             {/* محتوای اصلی کارت - border-radius حذف شد */}
             <div className="relative flex flex-col justify-between h-72 w-full max-w-sm p-6 bg-background backdrop-blur-xl">
                 <div>
-                    <motion.div variants={itemVariants} className="grid place-items-center w-12 h-12 bg-primary-accent text-3xl rounded-lg">
+                    <motion.div variants={itemVariants}
+                     className="grid place-items-center w-12 h-12 bg-primary-accent text-3xl rounded-lg">
                         {icon}
                     </motion.div>
                     

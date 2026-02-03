@@ -71,13 +71,7 @@ const WhyChooseUs = () => {
               ))}
             </div>
 
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="mt-4 px-10 py-4 bg-primary-accent text-background font-bold rounded-xl shadow-[0_10px_25px_rgba(0,188,145,0.3)]"
-            >
-              شروع همکاری
-            </motion.button>
+     
           </div>
 
           {/* بخش سمت چپ: تصویر و هاله نوری */}
@@ -85,12 +79,7 @@ const WhyChooseUs = () => {
             {/* هاله نوری پشت تصویر */}
             <div className="absolute w-[80%] h-[80%] bg-primary-accent/10 blur-[120px] rounded-full animate-pulse" />
             
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8 }}
-              className="relative z-10"
-            >
+          
               {/* جایگزین کردن با عکس موجود در پوشه public */}
               <img 
                 src="/background/background9.jpg" 
@@ -107,7 +96,7 @@ const WhyChooseUs = () => {
                 <div className="w-3 h-3 bg-primary-accent rounded-full" />
                 <span className="text-text-main text-sm font-bold">دردسترس برای انجام پروژه</span>
               </motion.div>
-            </motion.div>
+            
           </div>
 
         </div>

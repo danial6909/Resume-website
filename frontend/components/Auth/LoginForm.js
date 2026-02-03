@@ -17,7 +17,7 @@ const loginSchema = z.object({
     .max(20, "نام کاربری خیلی طولانی است"),
   password: z
     .string()
-    .min(6, "رمز عبور باید حداقل ۶ کاراکتر باشد"),
+    .min(8, "رمز عبور باید حداقل 8 کاراکتر باشد").max(128,"رمز عبور باید حداکثر 128 کاراکترباشد"),
 });
 
 export default function LoginForm() {

@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,7 +11,7 @@ import { useRegisterLogic } from "@/hooks/useRegisterLogic";
 const signUpSchema = z.object({
   username: z.string().min(3, "نام کاربری باید حداقل ۳ کاراکتر باشد"),
   email: z.string().email("فرمت ایمیل صحیح نیست"),
-  password: z.string().min(6, "رمز عبور باید حداقل ۶ کاراکتر باشد"),
+  password: z.string().min(8, "رمز عبور باید حداقل 8 کاراکتر باشد").max(128,"رمز عبور باید حداکثر 128 کاراکترباشد"),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "رمز عبور و تکرار آن یکسان نیستند",
