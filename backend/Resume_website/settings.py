@@ -149,6 +149,7 @@ AUTH_USER_MODEL = 'account.CustomUser'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'account.authenticate.CustomJWTCookieAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',

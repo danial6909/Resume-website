@@ -46,7 +46,11 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['email', 'username', 'password', 'password2']
-        extra_kwargs = {"password": {'write_only': True}}
+        extra_kwargs = {
+            'password': {'write_only': True, 'required': True},
+            'email': {'required': True},
+            'username': {'required': True},
+        }
 
     def validate(self, data):
         data['username'] = data['username'].lower().strip()
@@ -60,11 +64,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             validate_password(data['password'], user=CustomUser)
         except DjangoValidationError as e:
             raise serializers.ValidationError({'password': list(e.messages)})
-
-        try:
-            validate_email(data['email'])
-        except DjangoValidationError as e:
-            raise serializers.ValidationError({'email': list(e.messages)})
 
         return data
 
@@ -82,8 +81,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         return username
 
     def create(self, validated_data):
-            validated_data.pop('password2')
-            return CustomUser.objects.create_user(**validated_data)
+        validated_data.pop('password2')
+        return CustomUser.objects.create_user(**validated_data)
 
 
 class LoginSerializer(serializers.Serializer):
@@ -145,15 +144,16 @@ class UserCredentialsUpdateSerializer(serializers.Serializer):
         return data
 
     def update(self, instance, validated_data):
-        if validated_data['email']:
-            instance.email = validated_data['email']
+        email = validated_data.get('email')
+        username = validated_data.get('username')
 
-        if validated_data['username']:
-            instance.username = validated_data['username']
+        if email:
+            instance.email = email
+        if username:
+            instance.username = username
 
         instance.save()
         return instance
-
 
 class PasswordChangeSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True, write_only=True)
