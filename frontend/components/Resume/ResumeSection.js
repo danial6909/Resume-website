@@ -469,7 +469,8 @@ export default function ResumeSection() {
         { number: "7+", label: "جوایز کسب شده" },
         { number: "20k", label: "خط کد زنی" },
       ],
-      color: "var(--secondary-accent)",
+      color: "var(--primary-accent)",
+      
 
     },
     partner: {
@@ -494,8 +495,7 @@ export default function ResumeSection() {
         { number: "5+", label: "جوایز فنی" },
         { number: "50k", label: "کد بک‌اِند" },
       ],
-      color: "var(--primary-accent)",
-
+color: "var(--secondary-accent)",
     },
   };
 
