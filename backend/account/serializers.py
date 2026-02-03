@@ -47,6 +47,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['email', 'username', 'password', 'password2']
         extra_kwargs = {"password": {'write_only': True}}
+        required_fields = ['email', 'username', 'password', 'password2']
 
     def validate(self, data):
         data['username'] = data['username'].lower().strip()
