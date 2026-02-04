@@ -1,6 +1,4 @@
-
 "use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
@@ -8,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import MenuItem from "./MenuItem";
 import ThemeSwitcher from "@/components/Theme/ThemeSwitcher";
 import LoginBtn from "./LoginBtn";
-import logo from "@/public/logo/logo.jpg";
+import Logo from "./Logo";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react"; // وارد کردن آیکون همبرگری و بستن
 
@@ -66,6 +64,7 @@ export default function Header() {
         className={`w-full h-16 z-50 transition-all duration-300 ease-in-out border-b ${getHeaderStyles()}`}
       >
         <div className="container mx-auto px-4 h-full flex justify-between items-center">
+          
           {/* بخش سمت راست: لوگو و دکمه موبایل */}
           <div className="flex items-center gap-4">
             {/* دکمه همبرگری فقط در موبایل (md:hidden) */}
@@ -104,13 +103,8 @@ export default function Header() {
             </button>
 
             {/* لوگو */}
-            <Link href="/">
-              <Image
-                src={logo}
-                alt="Logo"
-                className="w-20 h-10 object-contain"
-              />
-            </Link>
+            <Logo />
+
           </div>
 
           {/* منوی دسکتاپ (در موبایل مخفی: hidden md:block) */}
@@ -132,13 +126,30 @@ export default function Header() {
             <ThemeSwitcher isSticky={isSticky} />
 
             {user ? (
-              <span
-                className={`text-sm font-medium ${
-                  isTransparent ? "text-white" : "text-foreground"
+              <Link
+                href="/profile"
+                className={`relative flex items-center justify-center w-13 h-13 rounded-full border-2 mr-2.5 transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-sm overflow-hidden ${
+                  isTransparent
+                    ? "border-white/30 bg-white/10 text-white hover:bg-white/20"
+                    : "border-primary-accent/20 bg-primary-accent/10 text-primary-accent hover:bg-primary-accent/20"
                 }`}
               >
-                {user.username}
-              </span>
+                {user.image ? (
+                  <Image
+                    src={user.image}
+                    alt={user.username}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <span className="text-sm font-bold uppercase tracking-tighter">
+                    {user.username?.charAt(0) || "U"}
+                  </span>
+                )}
+
+                {/* یک نقطه سبز کوچک برای نشان دادن وضعیت آنلاین بودن (اختیاری) */}
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-background rounded-full"></span>
+              </Link>
             ) : (
               <div className={isTransparent ? "dark" : ""}>
                 <LoginBtn />
@@ -147,6 +158,7 @@ export default function Header() {
           </div>
         </div>
       </header>
+
       {/* --- منوی موبایل Full-Screen با پالت رنگی اختصاصی --- */}
       <div
         className={`fixed inset-0 z-[60] md:hidden transition-all duration-700 ${
@@ -175,11 +187,9 @@ export default function Header() {
                   : "opacity-0 -translate-x-10"
               }`}
             >
-              <Image
-                src={logo}
-                alt="Logo"
-                className="w-12 h-auto grayscale brightness-200"
-              />
+              
+            <Logo/>
+
             </div>
 
             <button

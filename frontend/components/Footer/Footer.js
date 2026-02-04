@@ -13,19 +13,40 @@ import { motion } from "framer-motion";
 import NebulaInput from "../NebulaInput";
 
 const Footer = () => {
+  // تعریف واریانت برای کل کانتینر فوتر
+  const containerVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        staggerChildren: 0.15, // ستون‌ها یکی‌یکی با تاخیر ظاهر شوند
+        duration: 0.6,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
     <footer
       className="w-full bg-background border-t border-border pt-12 px-5 font-['VazirMatn',_vazir,_sans-serif]"
       dir="rtl"
     >
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-start">
+      <motion.div
+        className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-start"
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        // حذف once: true برای تکرار انیمیشن با هر بار اسکرول
+        viewport={{ once: false, amount: 0.1 }}
+      >
         {/* ستون اول: درباره کوتاه و سوشال */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="space-y-6"
-        >
+        <motion.div variants={itemVariants} className="space-y-6">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-primary-accent rounded-lg text-white">
               <Code2 size={24} />
@@ -60,24 +81,16 @@ const Footer = () => {
         </motion.div>
 
         {/* ستون دوم: لینک‌های سریع */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="lg:pr-8 space-y-4"
-        >
+        <motion.div variants={itemVariants} className="lg:pr-8 space-y-4">
           <h3 className="text-lg font-bold text-foreground">دسترسی سریع</h3>
           <ul className="space-y-3">
-            {["صفحه اصلی", "پروژه‌ها", "مهارت‌ها", "درباره من"].map((item) => (
+            {["صفحه اصلی", "پروژه‌ها", "مهارت‌ها", "درباره ما"].map((item) => (
               <li key={item}>
                 <a
                   href="#"
                   className="text-muted-foreground hover:text-primary-accent transition-all duration-300 text-sm flex items-center group"
                 >
-                  {/* فلش ثابت */}
                   <ChevronLeft size={14} className="shrink-0" />
-
-                  {/* متنی که به سمت چپ حرکت می‌کند */}
                   <span className="transition-transform duration-300 ease-out group-hover:translate-x-[-8px] pr-1">
                     {item}
                   </span>
@@ -88,12 +101,7 @@ const Footer = () => {
         </motion.div>
 
         {/* ستون سوم: تماس */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="space-y-4"
-        >
+        <motion.div variants={itemVariants} className="space-y-4">
           <h3 className="text-lg font-bold text-foreground">ارتباط</h3>
           <div className="space-y-4">
             <ContactInfo icon={<MapPin size={16} />} detail="تهران، ایران" />
@@ -109,21 +117,14 @@ const Footer = () => {
           </div>
         </motion.div>
 
-        {/* ستون چهارم: فرم تماس جمع‌وجور */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          className="lg:col-span-1"
-        >
+        {/* ستون چهارم: فرم تماس */}
+        <motion.div variants={itemVariants} className="lg:col-span-1">
           <h3 className="text-lg font-bold text-foreground mb-4">ارسال پیام</h3>
           <div className="space-y-3">
-            {/* ردیف اول: نام و ایمیل در یک خط */}
             <div className="grid grid-cols-2 gap-2">
               <NebulaInput label="نام" id="fname" name="firstname" />
               <NebulaInput label="ایمیل" id="email" name="email" type="email" />
             </div>
-
             <NebulaInput
               label="پیام..."
               id="message"
@@ -132,7 +133,6 @@ const Footer = () => {
               rows="2"
               className="resize-none"
             />
-
             <button className="flex items-center gap-2 bg-primary-accent text-white w-full py-2.5 rounded-lg hover:opacity-90 transition-all font-bold group cursor-pointer justify-center text-sm shadow-lg shadow-primary-accent/20">
               ارسال پیام
               <Send
@@ -142,15 +142,22 @@ const Footer = () => {
             </button>
           </div>
         </motion.div>
-      </div>
+      </motion.div>
 
-      {/* کپی رایت نهایی */}
-         <div className="mt-12 mb-6 pt-6 border-t border-border text-center text-muted-foreground text-xs">
+      {/* کپی رایت */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: false }}
+        className="mt-12 mb-6 pt-6 border-t border-border text-center text-muted-foreground text-xs"
+      >
+        <p>
+          © {new Date().getFullYear()} طراحی و توسعه با ❤️ توسط دانیال | تمامی
+          حقوق محفوظ است
+        </p>
+      </motion.div>
 
-        <p>© {new Date().getFullYear()} طراحی و توسعه با ❤️ توسط دانیال | تمامی حقوق محفوظ است</p>
-
-      </div>
-
+      {/* Style JSX باقی می‌ماند... */}
       <style jsx>{`
         :global(.socialContainer) {
           width: 40px;

@@ -1,52 +1,105 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from "react";
 import Marquee from "react-fast-marquee";
 
-/**
- * دانیال عزیز، برای اجرای این نسخه حتماً باید کتابخانه را نصب کنی:
- * دستور در ترمینال: npm install react-fast-marquee
- */
+const technologies = [
+  "JavaScript", "TypeScript", "React.js", "Next.js", 
+  "Node.js", "MongoDB", "Tailwind", "Express"
+];
 
-const InfiniteMarquee = ({ direction = "left", speed = 25 }) => {
-  const technologies = [
-    { name: 'React', icon: '⚛️', color: 'text-cyan-400' },
-    { name: 'JavaScript', icon: '🟨', color: 'text-yellow-400' },
-    { name: 'Node.js', icon: '💚', color: 'text-green-500' },
-    { name: 'MongoDB', icon: '🍃', color: 'text-green-400' },
-    { name: 'Next.js', icon: '⚫', color: 'text-white' },
-    { name: 'Tailwind', icon: '🌊', color: 'text-sky-400' },
-    { name: 'TypeScript', icon: '🔷', color: 'text-blue-500' },
-    { name: 'Express', icon: '🚀', color: 'text-gray-300' },
-  ];
+const InfiniteMarquee = () => {
+  const [mounted, setMounted] = useState(false);
+
+  // برای جلوگیری از باگ‌های رندرینگ در Next.js
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return (
-    <div className="w-full py-10 flex flex-col items-center justify-center overflow-hidden bg-[#050505]">
-      <div className="relative w-full overflow-hidden">
-        
-        {/* لایه‌های محو کننده کناری (Gradients) */}
-        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#050505] to-transparent z-10 pointer-events-none"></div>
-        <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#050505] to-transparent z-10 pointer-events-none"></div>
+    <section className="py-20 bg-background overflow-hidden border-y border-border/30 relative">
+      
+      {/* گریدینت‌های کناری */}
+      <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none"></div>
+      <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none"></div>
 
-        {/* استفاده از کامپوننت Marquee کتابخانه */}
-        <Marquee 
-          direction={direction} 
-          speed={speed} 
-          pauseOnHover={true} 
-          gradient={false} // چون خودمان گرادینت سفارشی دادیم این را غیرفعال می‌کنیم
-        >
-          {technologies.map((tech, index) => (
-            <div 
-              key={index} 
-              className="flex items-center gap-4 bg-white/5 border border-white/10 px-8 py-4 mx-4 rounded-2xl backdrop-blur-sm hover:bg-white/10 hover:border-white/40 transition-all duration-300 hover:scale-105 cursor-pointer shadow-xl"
-            >
-              <span className="text-3xl md:text-4xl">{tech.icon}</span>
-              <span className={`text-lg md:text-xl font-bold tracking-tight ${tech.color}`}>{tech.name}</span>
-            </div>
-          ))}
-        </Marquee>
-      </div>
-    </div>
+      <Marquee
+        speed={60}
+        pauseOnHover={true}
+        gradient={false}
+        // autoFill={false}  <-- این رو کلا ننویس یا false بزار
+        direction="left"
+      >
+        {/* لیست رو دو بار رندر می‌کنیم تا فضای خالی ایجاد نشه */}
+        {[...technologies, ...technologies, ...technologies, ...technologies, ...technologies, ...technologies, ...technologies, ...technologies, ...technologies, ...technologies, ...technologies, ...technologies].map((tech, index) => (
+          <div
+            key={index}
+            // اینجا min-w-[150px] گذاشتم که عرض آیتم‌ها مشخص باشه و کتابخانه گیج نشه
+            className="flex items-center justify-center min-w-[150px] px-8 py-4 mx-4 bg-surface/50 backdrop-blur-sm border border-border rounded-2xl group hover:border-primary-accent transition-all duration-300 cursor-pointer"
+          >
+            <span className="text-text-faded group-hover:text-text-main font-bold text-lg select-none">
+              {tech}
+            </span>
+          </div>
+        ))}
+      </Marquee>
+    </section>
   );
 };
 
 export default InfiniteMarquee;
+
+
+
+
+// "use client";
+// import React, { useState, useEffect } from "react";
+// import Marquee from "react-fast-marquee";
+
+// const technologies = [
+//   "JavaScript", "TypeScript", "React.js", "Next.js", 
+//   "Node.js", "MongoDB", "Tailwind", "Express"
+// ];
+
+// const InfiniteMarquee = () => {
+//   const [mounted, setMounted] = useState(false);
+
+//   useEffect(() => {
+//     setMounted(true);
+//   }, []);
+
+//   if (!mounted) return null;
+
+//   return (
+//     <section className="py-20 bg-background overflow-hidden border-y border-border/30 relative w-full">
+      
+//       {/* گریدینت‌های کناری */}
+//       <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none"></div>
+//       <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none"></div>
+
+//       <Marquee
+//         speed={60} // سرعت ۴۰۰ یا ۵۰۰ خیلی زیاده و باعث پرش میشه، ۶۰-۸۰ عالیه
+//         pauseOnHover={true}
+//         gradient={false}
+//         autoFill={true} // ۱. این رو حتما بذار تا صفحه رو پر کنه
+//         direction="left"
+//       >
+//         {technologies.map((tech, index) => (
+//           <div
+//             key={index}
+//             // ۲. نکته کلیدی: استفاده از w-[180px] به جای min-w
+//             // این باعث میشه کتابخونه بلافاصله بفهمه چقدر فضا نیازه و هنگ نکنه
+//             className="flex items-center justify-center w-[180px] h-[60px] mx-4 bg-surface/50 backdrop-blur-sm border border-border rounded-2xl group hover:border-primary-accent transition-all duration-300 cursor-pointer"
+//           >
+//             <span className="text-text-faded group-hover:text-text-main font-bold text-lg select-none whitespace-nowrap">
+//               {tech}
+//             </span>
+//           </div>
+//         ))}
+//       </Marquee>
+//     </section>
+//   );
+// };
+
+// export default InfiniteMarquee;

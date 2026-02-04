@@ -32,18 +32,25 @@
    2) LIGHT MODE (پیش‌فرض)
 -----------------------------------------*/
 :root {
-  /* Light Theme */
-  --primary-accent: #00bc91;
+  /* --- Light Theme (Soft & Professional) --- */
+  --primary-accent: #00bc91; 
   --secondary-accent: #3b82f6;
-  /* --secondary-accent: #40c9ff; */
 
-  --background: #e9e9e9;
-  --surface: #f5f5f5;
-  --border: #dddddd;
+  /* استفاده از رنگ استخوانی/کرم بسیار ملایم برای پس‌زمینه */
+  --background: #fdfcf9; 
+  
+  /* کارت‌ها سفید خالص باشند تا روی پس‌زمینه استخوانی به خوبی "بلند" شوند */
+  --surface: #ffffff; 
+  
+  /* بردر با تم قهوه‌ای-خاکستری بسیار روشن برای هماهنگی با پس‌زمینه */
+  --border: #e9e5e0; 
 
-  --text-main: #111111;
-  --text-faded: #555555;
-  --text-muted: #777777;
+  /* متن اصلی با رنگ زغالی گرم */
+  --text-main: #1a1918; 
+  
+  /* متن‌های فرعی با خاکستری ملایم */
+  --text-faded: #625f5c; 
+  --text-muted: #a3a09d;
 }
 
 /* ---------------------------------------

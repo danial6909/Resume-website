@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { containerVariants, itemVariants } from "../Resume/animations";
+import TitleHeaderPages from "../TitleHeaderPages";
 
 const Portfolio = () => {
   const categories = ["همه", "طراحی وب", "اپلیکیشن‌ها", "طراحی گرافیک"];
@@ -64,39 +65,9 @@ const Portfolio = () => {
       dir="rtl"
     >
       <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-8 ">
         {/* هدر و فیلتر با انیمیشن Framer Motion */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          viewport={{ once: true }}
-          className="flex flex-col md:flex-row justify-between items-center mb-10 gap-8"
-        >
-          {/* بخش متن رزومه */}
-          <div className="relative">
-            {/* کلمه پس‌زمینه بزرگ با انیمیشن محو */}
-            <span className="absolute -top-8 -right-4 text-8xl font-black text-text-main/[0.03] select-none font-sans">
-              PORTFOLIO
-            </span>
-
-            <div className="relative z-10 space-y-2">
-              <motion.h2
-                variants={itemVariants}
-                className="text-5xl md:text-7xl font-black leading-tight"
-              >
-                <span className="block text-text-main">پروژه های</span>
-                <span
-                  className="block text-transparent bg-clip-text border-text-main"
-                  style={{
-                    WebkitTextStroke: `1px rgba(255,255,255,0.2)`,
-                    display: "block",
-                  }}
-                >
-                  تیم ما
-                </span>
-              </motion.h2>
-            </div>
-          </div>
+        <TitleHeaderPages title1="Portfolio" title2="پروژه های "/>
 
           {/* منوی فیلتر کپسولی با انیمیشن ورودی */}
           <motion.div
@@ -124,7 +95,10 @@ const Portfolio = () => {
               </button>
             ))}
           </motion.div>
-        </motion.div>
+
+        </div>
+
+       
 
         {/* گرید پروژه‌ها */}
         <motion.div

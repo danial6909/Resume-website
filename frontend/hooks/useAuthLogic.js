@@ -1,67 +1,3 @@
-
-// "use client"
-// // frontend/hooks/useAuthLogic.js
-// import { useState, useEffect, useCallback } from 'react';
-// // import { useNavigate } from 'react-router-dom';
-// import axiosInstance from "../utils/axiosInstance";
-// import { useRouter } from 'next/navigation';
-
-// export function useAuthLogic() {
-//     // const navigate = useNavigate();
-//     const [loading, setLoading] = useState(false);
-//     const [user, setUser] = useState(null);
-//     const router = useRouter();
-    
-//     const login = useCallback(async (username, password) => {
-      
-//         console.log(username ,typeof(password))
-//         setLoading(true);
-//         try {
-//             const response = await axiosInstance.post('account/login/', { username, password });
-//             setUser(response.data.user);
-//             console.log(response.data)
-
-//             router.push('/'); // هدایت به داشبورد پس از ورود موفق
-//         } catch (error) {
-//             console.error('Login failed:', error);
-//             alert('Login failed. Please check your credentials.');
-//         } finally {
-//             setLoading(false);
-//         }
-//     //      const timer = setTimeout(() => {
-      
-//     //          console.log( "salam nokaram" ,email , password)
-//     //   // کد مورد نظر شما اینجا اجرا می‌شود
-//       setLoading(false);
-//     // }, 5000); // ۲۰۰۰ میلی‌ثانیه = ۲ ثانیه
-
-//     }, );
-
-//     return {
-//         user,
-//         loading,
-//         login,
-//     };
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 "use client"
 import { useState, useEffect, useCallback } from 'react';
 import axiosInstance from "../utils/axiosInstance";
@@ -80,6 +16,7 @@ export function useAuthLogic() {
             setUser(response.data.user);
         } catch (error) {
             console.log("کاربر لاگین نیست");
+            console.log(error);
             setUser(null);
         } finally {
             setLoading(false);
@@ -91,20 +28,22 @@ export function useAuthLogic() {
         getMe();
     }, [getMe]);
 
-    const login = useCallback(async (username, password) => {
-        setLoading(true);
-        try {
-            const response = await axiosInstance.post('account/login/', { username, password });
-            // دیتایی که گفتی (id, username, email) اینجا در استیت ذخیره می‌شود
-            setUser(response.data.user);
-            router.push('/');
-        } catch (error) {
-            console.error('Login failed:', error);
-            alert('ورود ناموفق بود. دوباره تلاش کنید.');
-        } finally {
-            setLoading(false);
-        }
-    }, [router]);
+// frontend/hooks/useAuthLogic.js
+const login = useCallback(async (username, password) => {
+    setLoading(true);
+    try {
+        const response = await axiosInstance.post('account/login/', { username, password });
+        setUser(response.data.user);
+        router.push('/');
+        return { success: true }; // سیگنال موفقیت
+    } catch (error) {
+        console.error('Login failed:', error);
+        // ارور رو پرتاب می‌کنیم تا LoginForm بتونه توی catch خودش بگیردش
+        throw error; 
+    } finally {
+        setLoading(false);
+    }
+}, [router]);
 
 
     const logout = useCallback(async () => {
