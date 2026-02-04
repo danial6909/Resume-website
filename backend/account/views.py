@@ -13,6 +13,7 @@ from .models import Profile
 from django.contrib.auth import authenticate
 from .utils import get_tokens_for_user, set_auth_cookies, delete_auth_cookies
 from drf_spectacular.utils import extend_schema
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 
 
@@ -68,7 +69,13 @@ class LoginAPIView(APIView):
 
 class CookieTokenRefreshView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = TokenRefreshSerializer
 
+    @extend_schema(
+        tags=['Auth'],
+        responses={200: TokenRefreshSerializer},
+        auth=[]
+    )
     def post(self, request):
         refresh_token = request.COOKIES.get('refresh_token')
 

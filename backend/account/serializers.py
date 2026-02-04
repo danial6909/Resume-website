@@ -41,46 +41,47 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
-    password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+    password2 = serializers.CharField(
+        style={'input_type': 'password'},
+        write_only=True,
+        help_text="تکرار رمز عبور"
+    )
 
     class Meta:
         model = CustomUser
         fields = ['email', 'username', 'password', 'password2']
         extra_kwargs = {
-            'password': {'write_only': True, 'required': True},
+            'password': {'write_only': True},
             'email': {'required': True},
             'username': {'required': True},
         }
 
-    def validate_email(self, value):
-        if value:
-            value = value.lower().strip()
-        if CustomUser.objects.filter(email=value).exists():
-            raise serializers.ValidationError("این ایمیل قبلاً ثبت شده است.")
-        return value
-
     def validate_username(self, value):
         username = value.lower().strip()
         if CustomUser.objects.filter(username=username).exists():
-            raise serializers.ValidationError({'username' : ['این یوزرنیم از قبل انتخاب شده است.']})
-
-        if not (3 < len(username) < 30):
+            raise serializers.ValidationError("این نام کاربری قبلاً انتخاب شده است.")
+        if not (3 <= len(username) <= 30):
             raise serializers.ValidationError("نام کاربری باید بین ۳ تا ۳۰ کاراکتر باشد.")
-
         return username
 
+    def validate_email(self, value):
+        email = value.lower().strip()
+        if CustomUser.objects.filter(email=email).exists():
+            raise serializers.ValidationError("این ایمیل قبلاً ثبت شده است.")
+        return email
+
     def validate(self, data):
-        data['username'] = data['username'].lower().strip()
-        data['email'] = data['email'].lower().strip()
         password = data.get('password')
+        password2 = data.get('password2')
 
-        if data['password'] != data['password2']:
-            raise serializers.ValidationError({'password': ["پسورد ها باهم فرق میکنند."]})
+        if password and password2 and password != password2:
+            raise serializers.ValidationError({'password2': "پسوردها مطابقت ندارند."})
 
-        try:
-            validate_password(data['password'], user=CustomUser)
-        except DjangoValidationError as e:
-            raise serializers.ValidationError({'password': list(e.messages)})
+        if password:
+            try:
+                validate_password(password, user=CustomUser)
+            except DjangoValidationError as e:
+                raise serializers.ValidationError({'password': list(e.messages)})
 
         return data
 
@@ -172,8 +173,8 @@ class PasswordChangeSerializer(serializers.Serializer):
         return value
 
     def validate(self, data):
-        new_password = data.get('password1')
-        new_password_confirm = data.get('password2')
+        new_password = data.get('new_password')
+        new_password_confirm = data.get('new_password_confirm')
 
         if new_password != new_password_confirm:
             raise serializers.ValidationError({'new_password_confirm': ["پسورد ها باهم فرق میکنند."]})

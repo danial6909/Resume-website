@@ -8,9 +8,7 @@ from django.utils.translation import gettext_lazy as _
 import re
 
 
-
 def custom_exception_handler(exception, context):
-    # this will rewrite the default exception handler belong to rest_framework
     response = exception_handler(exception, context)
 
     status_messages = {
@@ -33,37 +31,27 @@ def custom_exception_handler(exception, context):
             "errors": {}
         }
 
-        # here we take errors from old handler list and change it to string to new handler
-        # if there is just one error, then there is obviously no list, so we directly make it in else statement
-        if isinstance(response.data, dict):
-            for field, errors in response.data.items():
-                    custom_data["errors"][field] = errors if isinstance(errors, list) else [errors]
-
-        # nonfield errors should be handled too, so there it is:
-        elif isinstance(response.data, list):
-            custom_data["errors"]["non_field_errors"] = response.data
-
         if response.status_code == 429:
-            custom_data = {
-                "status": "error",
-                "status_code": 429,
-                "message": status_messages[429],
-                "errors": {
-                    "non_field_errors": [f"Retry after {response.wait} seconds."]
-                }
-            }
+            wait_time = getattr(exception, 'wait', 'چند')
+            custom_data["errors"]["non_field_errors"] = [f"لطفاً {wait_time} ثانیه دیگر دوباره تلاش کنید."]
             response.data = custom_data
             return response
+
+        if isinstance(response.data, dict):
+            for field, errors in response.data.items():
+                custom_data["errors"][field] = errors if isinstance(errors, list) else [errors]
+        elif isinstance(response.data, list):
+            custom_data["errors"]["non_field_errors"] = response.data
 
         response.data = custom_data
         return response
 
     return Response({
-            "status": "error",
-            "status_code": 500,
-            "message": "یک خطای پیش‌بینی نشده در سرور رخ داد.",
-            "errors": {"server": ["Internal Server Error"]}
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        "status": "error",
+        "status_code": 500,
+        "message": "یک خطای پیش‌بینی نشده در سرور رخ داد.",
+        "errors": {"server": ["Internal Server Error"]}
+    }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 def get_tokens_for_user(user):

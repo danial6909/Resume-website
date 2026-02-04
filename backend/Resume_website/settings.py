@@ -112,7 +112,7 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'account.utils.SymbolValidator',
     },
     {
-        'NAME': 'your_app.utils.MaxLengthValidator',
+        'NAME': 'account.utils.MaxLengthValidator',
         'OPTIONS': {'max_length': 128},
     },
 ]
@@ -171,12 +171,16 @@ REST_FRAMEWORK = {
 with open(os.environ.get('JWT_PRIVATE_KEY_PATH'), 'r') as f:
     PRIVATE_KEY_CONTENT = f.read()
 
+with open(os.environ.get('JWT_PUBLIC_KEY_PATH'), 'r') as f:
+    PUBLIC_KEY_CONTENT = f.read()
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
     'ROTATE_REFRESH_TOKENS': True,
     'ALGORITHM': 'RS256',
     'SIGNING_KEY': PRIVATE_KEY_CONTENT,
+    'VERIFYING_KEY': PUBLIC_KEY_CONTENT,
 }
 
 SPECTACULAR_SETTINGS = {
