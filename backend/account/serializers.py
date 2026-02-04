@@ -52,6 +52,23 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             'username': {'required': True},
         }
 
+    def validate_email(self, value):
+        if value:
+            value = value.lower().strip()
+        if CustomUser.objects.filter(email=value).exists():
+            raise serializers.ValidationError("این ایمیل قبلاً ثبت شده است.")
+        return value
+
+    def validate_username(self, value):
+        username = value.lower().strip()
+        if CustomUser.objects.filter(username=username).exists():
+            raise serializers.ValidationError({'username' : ['این یوزرنیم از قبل انتخاب شده است.']})
+
+        if not (3 < len(username) < 30):
+            raise serializers.ValidationError("نام کاربری باید بین ۳ تا ۳۰ کاراکتر باشد.")
+
+        return username
+
     def validate(self, data):
         data['username'] = data['username'].lower().strip()
         data['email'] = data['email'].lower().strip()
@@ -66,19 +83,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'password': list(e.messages)})
 
         return data
-
-    def validate_username(self, value):
-        username = value.lower().strip()
-        if CustomUser.objects.filter(username=username).exists():
-            raise serializers.ValidationError({'username' : ['این یوزرنیم از قبل انتخاب شده است.']})
-
-        if len(username) > 30:
-            raise serializers.ValidationError({'username': ["نام کاربری نباید بیشتر از ۳۰ کاراکتر باشد."]})
-
-        if len(username) < 3:
-            raise serializers.ValidationError({'username': ["نام کاربری نباید کمتر از ۳ حرف باشد."]})
-
-        return username
 
     def create(self, validated_data):
         validated_data.pop('password2')
