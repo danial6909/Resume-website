@@ -41,62 +41,52 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
-    password2 = serializers.CharField(
-        style={'input_type': 'password'},
-        write_only=True,
-        help_text="تکرار رمز عبور",
-        error_messages={
-            'required': 'تکرار رمز عبور الزامی است.'
-        }
-    )
+    password2 = serializers.CharField(write_only=True)
 
     class Meta:
         model = CustomUser
         fields = ['email', 'username', 'password', 'password2']
         extra_kwargs = {
-            'username': {
-                'min_length': 3,
-                'max_length': 30,
-                'error_messages': {
-                    'unique': 'این نام کاربری قبلاً انتخاب شده است.',
-                    'min_length': 'نام کاربری باید حداقل ۳ کاراکتر باشد.',
-                    'max_length': 'نام کاربری نباید بیشتر از ۳۰ کاراکتر باشد.',
-                    'required': 'وارد کردن نام کاربری الزامی است.'
-                }
-            },
-            'email': {
-                'error_messages': {
-                    'unique': 'این ایمیل قبلاً ثبت شده است.',
-                    'invalid': 'لطفاً یک ایمیل معتبر وارد کنید.',
-                    'required': 'وارد کردن ایمیل الزامی است.'
-                }
-            },
-            'password': {
-                'write_only': True,
-                'error_messages': {'required': 'وارد کردن رمز عبور الزامی است.'}
-            },
+            'username': {'validators': []},
+            'email': {'validators': []},
         }
 
-        def validate_username(self, value):
-            return value.lower().strip()
-
-        def validate_email(self, value):
-            return value.lower().strip()
-
-    def validate_password(self, value):
-        try:
-            validate_password(value, user=CustomUser)
-        except DjangoValidationError as e:
-            raise serializers.ValidationError(list(e.messages))
-        return value
-
     def validate(self, data):
-        password = data.get('password')
-        password2 = data.get('password2')
+        errors = {}
+
+        username = data.get('username', '').strip().lower()
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        password2 = data.get('password2', '')
+
+        if not username:
+            errors['username'] = ["وارد کردن نام کاربری الزامی است."]
+        elif len(username) < 3:
+            errors['username'] = ["نام کاربری باید حداقل ۳ کاراکتر باشد."]
+        elif CustomUser.objects.filter(username=username).exists():
+            errors['username'] = ["این نام کاربری قبلاً انتخاب شده است."]
+
+        if not email:
+            errors['email'] = ["وارد کردن ایمیل الزامی است."]
+        elif CustomUser.objects.filter(email=email).exists():
+            errors['email'] = ["این ایمیل قبلاً ثبت شده است."]
+
+        if not password:
+            errors['password'] = ["وارد کردن رمز عبور الزامی است."]
+        else:
+            try:
+                validate_password(password, user=CustomUser)
+            except DjangoValidationError as e:
+                errors['password'] = list(e.messages)
 
         if password and password2 and password != password2:
-            raise serializers.ValidationError({'password2': "پسوردها مطابقت ندارند."})
+            errors['password2'] = ["پسوردها مطابقت ندارند."]
 
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        data['username'] = username
+        data['email'] = email
         return data
 
     def create(self, validated_data):
