@@ -5,6 +5,7 @@ from rest_framework import serializers
 from .models import Profile
 from django.templatetags.static import static
 from django.core.exceptions import ValidationError as DjangoValidationError
+from drf_spectacular.utils import extend_schema_field, inline_serializer
 
 
 
@@ -35,9 +36,38 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class UserInfoSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email']
+        fields = ['user']
+
+    @extend_schema_field(inline_serializer(
+        name='UserDetailResponse',
+        fields={
+            'username': serializers.CharField(),
+            'image_url': serializers.URLField(),
+        }
+    ))
+    def get_user(self, obj):
+        request = self.context.get('request')
+
+        image_url = None
+        try:
+            if obj.profile.image:
+                image_url = obj.profile.image.url
+            else:
+                image_url = static('images/profile_pics/profile_image_default.png')
+        except AttributeError:
+            image_url = static('images/profile_pics/profile_image_default.png')
+
+        if request and image_url:
+            image = request.build_absolute_uri(image_url)
+
+        return {
+            'username': obj.username,
+            'image_url': image_url,
+        }
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
