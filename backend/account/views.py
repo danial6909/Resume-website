@@ -124,7 +124,7 @@ class UserProfileAPIView(RetrieveUpdateAPIView):
             return Profile.objects.create(user=user)
 
 
- class UserMeAPIView(APIView):
+class UserMeAPIView(APIView):
      permission_classes = [IsAuthenticated]
 
      @extend_schema(responses={200: UserInfoSerializer})
