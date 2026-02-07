@@ -26,7 +26,8 @@ CORS_ALLOW_CREDENTIALS = True
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
-
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 # Application definition
 
 INSTALLED_APPS = [
@@ -54,7 +55,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'Resume_website.urls'
 
@@ -112,7 +112,7 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'account.utils.SymbolValidator',
     },
     {
-        'NAME': 'your_app.utils.MaxLengthValidator',
+        'NAME': 'account.utils.MaxLengthValidator',
         'OPTIONS': {'max_length': 128},
     },
 ]
@@ -126,6 +126,9 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
+
+# this will change number and date to current language and related culture.
+USE_L10N = True
 
 USE_TZ = True
 
@@ -171,12 +174,16 @@ REST_FRAMEWORK = {
 with open(os.environ.get('JWT_PRIVATE_KEY_PATH'), 'r') as f:
     PRIVATE_KEY_CONTENT = f.read()
 
+with open(os.environ.get('JWT_PUBLIC_KEY_PATH'), 'r') as f:
+    PUBLIC_KEY_CONTENT = f.read()
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
     'ROTATE_REFRESH_TOKENS': True,
     'ALGORITHM': 'RS256',
     'SIGNING_KEY': PRIVATE_KEY_CONTENT,
+    'VERIFYING_KEY': PUBLIC_KEY_CONTENT,
 }
 
 SPECTACULAR_SETTINGS = {

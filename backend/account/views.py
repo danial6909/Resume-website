@@ -1,4 +1,10 @@
+from .serializers import UserRegisterSerializer, ProfileSerializer, UserCredentialsUpdateSerializer, \
+    PasswordChangeSerializer, PhoneNumberUpdateSerializer, LoginSerializer, UserInfoSerializer
+from .utils import get_tokens_for_user, set_auth_cookies, delete_auth_cookies
+from .models import Profile
 from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import serializers as drf_serializers
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import RetrieveUpdateAPIView, GenericAPIView
@@ -7,31 +13,36 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import UserRegisterSerializer, ProfileSerializer, UserCredentialsUpdateSerializer, \
-    PasswordChangeSerializer, PhoneNumberUpdateSerializer, LoginSerializer, UserInfoSerializer
-from .models import Profile
-from django.contrib.auth import authenticate
-from .utils import get_tokens_for_user, set_auth_cookies, delete_auth_cookies
-from drf_spectacular.utils import extend_schema
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from django.contrib.auth import authenticate, get_user_model
 
 
+CustomUser = get_user_model()
 
 class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
         request=UserRegisterSerializer,
-        responses={201: UserInfoSerializer}
+        responses={201: inline_serializer(
+            name='RegisterResponse',
+            fields={
+                'message': drf_serializers.CharField(),
+                'user': UserInfoSerializer(),
+            }
+        )}
     )
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        user_with_profile = CustomUser.objects.select_related('profile').get(id=user.id)
         tokens = get_tokens_for_user(user)
 
         response = Response({
             "message": "ثبت نام با موفقیت انجام شد",
-            "user": UserInfoSerializer(user).data,
+            "user": UserInfoSerializer(user_with_profile, context={'request':request}).data,
         }, status=status.HTTP_201_CREATED)
 
         return set_auth_cookies(response, tokens)
@@ -44,23 +55,28 @@ class LoginAPIView(APIView):
 
     @extend_schema(
         request=LoginSerializer,
-        responses={200: UserInfoSerializer},
+        responses={200: inline_serializer(
+            name='LoginResponse',
+            fields={
+                'message': drf_serializers.CharField(),
+                'user': UserInfoSerializer(),
+            }
+        )},
         description='Login and get user data with cookies'
     )
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
-
         serializer.is_valid(raise_exception=True)
-
         user = authenticate(
             username=serializer.validated_data['username'],
             password=serializer.validated_data['password']
         )
+        user_with_profile = CustomUser.objects.select_related('profile').get(id=user.id)
         tokens = get_tokens_for_user(user)
 
         response = Response({
             "message": "ورود با موفقیت انجام شد",
-            "user": UserInfoSerializer(user).data,
+            "user": UserInfoSerializer(user_with_profile, context={'request':request}).data,
         }, status=status.HTTP_200_OK)
 
         return set_auth_cookies(response, tokens)
@@ -68,7 +84,13 @@ class LoginAPIView(APIView):
 
 class CookieTokenRefreshView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = TokenRefreshSerializer
 
+    @extend_schema(
+        tags=['Auth'],
+        responses={200: TokenRefreshSerializer},
+        auth=[]
+    )
     def post(self, request):
         refresh_token = request.COOKIES.get('refresh_token')
 
@@ -88,8 +110,10 @@ class CookieTokenRefreshView(APIView):
 
             return set_auth_cookies(response, tokens)
 
-        except Exception:
-            raise ValidationError({"refresh_token": ["Invalid or expired refresh token"]})
+
+        except (InvalidToken, TokenError) as e:
+
+            raise ValidationError({"refresh_token": ["توکن نامعتبر یا منقضی شده است."]})
 
 
 class LogoutAPIView(APIView):
@@ -107,13 +131,30 @@ class LogoutAPIView(APIView):
 class UserProfileAPIView(RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ProfileSerializer
-    queryset = Profile.objects.all()
 
     def get_object(self):
+        user = self.request.user
         try:
-            return self.request.user.profile
+            return Profile.objects.select_related('user').get(user=user)
         except Profile.DoesNotExist:
-            return Profile.objects.create(user=self.request.user)
+            return Profile.objects.create(user=user)
+
+
+class UserMeAPIView(APIView):
+     permission_classes = [IsAuthenticated]
+
+     @extend_schema(responses={200: UserInfoSerializer})
+     def get(self, request):
+         # request.user already loaded by middleware
+         user = request.user
+         # Only fetch profile if not already loaded
+         if not hasattr(user, 'profile'):
+             user = CustomUser.objects.select_related('profile').get(id=user.id)
+
+         serializer = UserInfoSerializer(user, context={'request': request})
+         return Response({
+            "user": UserInfoSerializer(user, context={'request':request}).data,
+        }, status=status.HTTP_200_OK)
 
 
 class UserCredentialsUpdateAPIView(RetrieveUpdateAPIView):

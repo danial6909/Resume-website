@@ -5,6 +5,7 @@ from rest_framework import serializers
 from .models import Profile
 from django.templatetags.static import static
 from django.core.exceptions import ValidationError as DjangoValidationError
+from drf_spectacular.utils import extend_schema_field, inline_serializer
 
 
 
@@ -35,50 +36,77 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class UserInfoSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(read_only=True)
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email']
+        fields = ['username', 'image']
 
+    def get_image(self, obj):
+        request = self.context.get('request')
+
+        image_url = None
+        try:
+            if obj.profile.image:
+                image_url = obj.profile.image.url
+            else:
+                image_url = static('images/profile_pics/profile_image_default.png')
+        except AttributeError:
+            image_url = static('images/profile_pics/profile_image_default.png')
+
+        if request and image_url:
+            image_url = request.build_absolute_uri(image_url)
+
+        return image_url
 
 class UserRegisterSerializer(serializers.ModelSerializer):
-    password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+    password2 = serializers.CharField(write_only=True)
 
     class Meta:
         model = CustomUser
         fields = ['email', 'username', 'password', 'password2']
         extra_kwargs = {
-            'password': {'write_only': True, 'required': True},
-            'email': {'required': True},
-            'username': {'required': True},
+            'password': {'write_only': True},
         }
 
     def validate(self, data):
-        data['username'] = data['username'].lower().strip()
-        data['email'] = data['email'].lower().strip()
-        password = data.get('password')
+        errors = {}
 
-        if data['password'] != data['password2']:
-            raise serializers.ValidationError({'password': ["پسورد ها باهم فرق میکنند."]})
+        username = data.get('username', '').strip().lower()
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        password2 = data.get('password2', '')
 
-        try:
-            validate_password(data['password'], user=CustomUser)
-        except DjangoValidationError as e:
-            raise serializers.ValidationError({'password': list(e.messages)})
+        if not username:
+            errors['username'] = ["وارد کردن نام کاربری الزامی است."]
+        elif len(username) < 3:
+            errors['username'] = ["نام کاربری باید حداقل ۳ کاراکتر باشد."]
+        elif CustomUser.objects.filter(username=username).exists():
+            errors['username'] = ["این نام کاربری قبلاً انتخاب شده است."]
 
+        if not email:
+            errors['email'] = ["وارد کردن ایمیل الزامی است."]
+        elif CustomUser.objects.filter(email=email).exists():
+            errors['email'] = ["این ایمیل قبلاً ثبت شده است."]
+
+        if not password:
+            errors['password'] = ["وارد کردن رمز عبور الزامی است."]
+        else:
+            try:
+                validate_password(password, user=CustomUser)
+            except DjangoValidationError as e:
+                errors['password'] = list(e.messages)
+
+        if password and password2 and password != password2:
+            errors['password2'] = ["پسوردها مطابقت ندارند."]
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        data['username'] = username
+        data['email'] = email
         return data
-
-    def validate_username(self, value):
-        username = value.lower().strip()
-        if CustomUser.objects.filter(username=username).exists():
-            raise serializers.ValidationError({'username' : ['این یوزرنیم از قبل انتخاب شده است.']})
-
-        if len(username) > 30:
-            raise serializers.ValidationError({'username': ["نام کاربری نباید بیشتر از ۳۰ کاراکتر باشد."]})
-
-        if len(username) < 3:
-            raise serializers.ValidationError({'username': ["نام کاربری نباید کمتر از ۳ حرف باشد."]})
-
-        return username
 
     def create(self, validated_data):
         validated_data.pop('password2')
@@ -168,8 +196,8 @@ class PasswordChangeSerializer(serializers.Serializer):
         return value
 
     def validate(self, data):
-        new_password = data.get('password1')
-        new_password_confirm = data.get('password2')
+        new_password = data.get('new_password')
+        new_password_confirm = data.get('new_password_confirm')
 
         if new_password != new_password_confirm:
             raise serializers.ValidationError({'new_password_confirm': ["پسورد ها باهم فرق میکنند."]})
