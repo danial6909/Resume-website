@@ -3,9 +3,9 @@ from .serializers import UserRegisterSerializer, ProfileSerializer, UserCredenti
 from .utils import get_tokens_for_user, set_auth_cookies, delete_auth_cookies
 from .models import Profile
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema
 from drf_spectacular.utils import extend_schema, inline_serializer
-from rest_framework import status, serializers
+from rest_framework import serializers as drf_serializers
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import RetrieveUpdateAPIView, GenericAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -25,10 +25,10 @@ class RegisterAPIView(APIView):
 
     @extend_schema(
         request=UserRegisterSerializer,
-        responses={201: inline_serializer(  # ======== تغییر یافت ========
+        responses={201: inline_serializer(
             name='RegisterResponse',
             fields={
-                'message': serializers.CharField(),
+                'message': drf_serializers.CharField(),
                 'user': UserInfoSerializer(),
             }
         )}
@@ -58,7 +58,7 @@ class LoginAPIView(APIView):
         responses={200: inline_serializer(
             name='LoginResponse',
             fields={
-                'message': serializers.CharField(),
+                'message': drf_serializers.CharField(),
                 'user': UserInfoSerializer(),
             }
         )},
