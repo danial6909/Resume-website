@@ -10,6 +10,7 @@
  
 
   --color-background: oklch(from var(--background) l c h);
+  --color-background2: oklch(from var(--background2) l c h);
   --color-surface: oklch(from var(--surface) l c h);
   --color-border: oklch(from var(--border) l c h);
 
@@ -38,6 +39,7 @@
 
   /* استفاده از رنگ استخوانی/کرم بسیار ملایم برای پس‌زمینه */
   --background: #fdfcf9; 
+  --background2: #ececec;
   
   /* کارت‌ها سفید خالص باشند تا روی پس‌زمینه استخوانی به خوبی "بلند" شوند */
   --surface: #ffffff; 
@@ -62,8 +64,9 @@ html.dark {
   --secondary-accent: #3b82f6;
   
   --background: #0f0f0f;
+  --background2: #0a0a0a;
   --surface: #1a1a1a;
-  --border: rgb(255 255 255 / 7%);
+  --border: rgba(238, 215, 215, 0.07);
   
   --text-main: #ffffff;
   --text-faded: #ffffffaa;
@@ -75,7 +78,7 @@ html.dark {
 
 
 
-
+/* ////////////////////////////////////////////////////// */
 
 /* scroll bar */
 body {

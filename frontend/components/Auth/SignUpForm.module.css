@@ -61,7 +61,7 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px;
 }
 
 .formGroup {
@@ -230,11 +230,56 @@
   text-decoration: underline;
 }
 
-/* ریسپانسیو */
+
+
+
+/* ////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+
+
+/* ریسپانسیو اختصاصی برای موبایل */
 @media (max-width: 480px) {
+  .container {
+    height: auto; /* اجازه به صفحه برای اسکرول شدن در صورت زیاد بودن محتوا */
+    min-height: 100vh;
+    padding: 20px 0;
+    overflow-y: auto;
+  }
+
   .formContainer {
-    margin-top: 4vh;
+    margin-top: 2vh;
+    width: 92%; /* ایجاد فاصله کوچک از لبه‌های گوشی */
     padding: 24px 16px;
+    gap: 15px;
+  }
+
+  .formTitle {
+    font-size: 1.1rem;
+  }
+
+  .formInput {
+    padding: 10px 14px; /* کوچک‌تر کردن پدینگ برای فضای بیشتر */
+    font-size: 13px;
+  }
+
+  .formLabel {
+    font-size: 13px;
+  }
+
+  .errorMessage {
+    font-size: 0.7rem;
+  }
+}
+
+/* برای گوشی‌های خیلی کوچک یا حالت افقی (Landscape) */
+@media (max-height: 700px) {
+  .formContainer {
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  .container {
+    display: block; /* خروج از حالت فلکس احتمالی برای اسکرول راحت‌تر */
   }
 }
 
@@ -242,43 +287,26 @@
 
 
 
-
-
-
-
-
-
+/* ////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
 
 
 
 /* استایل ارور ها  */
-/* ظرفیت فیلدها */
-
-
-/* استایل جدید پیام خطا با رنگ آبی/فیروزه‌ای */
 .errorMessage {
-  /* استفاده از رنگ Secondary (آبی روشن) یا Third (سبز آکوا) */
   color: var(--color-third); 
   font-size: 0.75rem;
   font-weight: 400;
-  position: absolute;
-  bottom: -1.5rem;
-  right: 0;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  letter-spacing: 0.5px;
-  text-shadow: 0 0 8px rgba(100, 255, 218, 0.3); /* درخشش ملایم متن */
+  position: relative; 
+  margin-top: 8px; 
+  display: block; 
+  text-align: right;
+  line-height: 1.6;
+  white-space: pre-line; /* برای اعمال شدن اینترها */
+  text-shadow: 0 0 8px rgba(100, 255, 218, 0.3);
   animation: slideIn 0.3s ease-out;
 }
 
-/* تغییر آیکون به یک دایره کوچک یا علامت اطلاعات */
-.errorMessage::before {
-  content: "•";
-  font-size: 1.2rem;
-  line-height: 0;
-}
 
 .inputError {
   /* به جای قرمز، از رنگ ثانویه (آبی) برای بردر استفاده می‌کنیم */
@@ -301,4 +329,11 @@
   100% {
     box-shadow: 0 0 0px rgba(59, 130, 246, 0.2);
   }
+}
+
+
+/* انیمیشن‌ها */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(10px); } /* ورود از سمت راست */
+  to { opacity: 1; transform: translateX(0); }
 }

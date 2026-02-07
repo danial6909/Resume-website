@@ -51,7 +51,7 @@ axiosInstance.interceptors.response.use(
 
         // ۲. ارسال درخواست به اندپوینت رفرش
         // بک‌اِند در این مرحله کوکی رفرش‌توکن را می‌خواند و کوکی‌های جدید ست می‌کند
-        await axios.post(`${BASE_URL}refresh`, {}, { withCredentials: true });
+        await axios.post(`${BASE_URL}refresh-token/`, {}, { withCredentials: true });
 
         // ۳. اگر رفرش موفق بود، درخواست اصلی را دوباره ارسال کن
         console.log('Token refreshed successfully!');

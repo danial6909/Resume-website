@@ -1,72 +1,84 @@
+// frontend/hooks/useAuthLogic.js
 "use client"
 import { useState, useEffect, useCallback } from 'react';
 import axiosInstance from "../utils/axiosInstance";
 import { useRouter } from 'next/navigation';
 
 export function useAuthLogic() {
-    const [loading, setLoading] = useState(true); // برای جلوگیری از پرش صفحه با true شروع می‌کنیم
+    const [loading, setLoading] = useState(true); // برای چک کردن اولیه وضعیت لاگین
     const [user, setUser] = useState(null);
+    const [authActionLoading, setAuthActionLoading] = useState(false); // لودینگ مخصوص دکمه‌های فرم
     const router = useRouter();
 
-    // تابع برای چک کردن وضعیت لاگین با استفاده از کوکی
+    // ۱. دریافت اطلاعات کاربر (پروفایل)
+    // یک جایی مشکل داره اسکرول میکنی هدر رو کلی لاگ گرفته میشه
     const getMe = useCallback(async () => {
+       
+
         try {
-            // این اندپوینت باید در بک‌اِند ساخته شود تا اطلاعات کاربر را از روی کوکی برگرداند
             const response = await axiosInstance.get('account/me/'); 
             setUser(response.data.user);
+         
         } catch (error) {
-            console.log("کاربر لاگین نیست");
-            console.log(error);
             setUser(null);
         } finally {
             setLoading(false);
         }
     }, []);
 
-    // اجرای خودکار getMe هنگام لود شدن سایت یا رفرش
     useEffect(() => {
         getMe();
     }, [getMe]);
 
-// frontend/hooks/useAuthLogic.js
-const login = useCallback(async (username, password) => {
-    setLoading(true);
-    try {
-        const response = await axiosInstance.post('account/login/', { username, password });
-        setUser(response.data.user);
-        router.push('/');
-        return { success: true }; // سیگنال موفقیت
-    } catch (error) {
-        console.error('Login failed:', error);
-        // ارور رو پرتاب می‌کنیم تا LoginForm بتونه توی catch خودش بگیردش
-        throw error; 
-    } finally {
-        setLoading(false);
-    }
-}, [router]);
+    // ۲. منطق ورود (Login)
+    const login = useCallback(async (username, password) => {
+        setAuthActionLoading(true);
+        try {
+            const response = await axiosInstance.post('account/login/', { username, password });
+            setUser(response.data.user);
+           
+            router.push('/');
+            return response.data;
+        } finally {
+            setAuthActionLoading(false);
+        }
+    }, [router]);
 
+    // ۳. منطق ثبت‌نام (Register)
+    const registerUser = useCallback(async (username, email, password, password2) => {
+        setAuthActionLoading(true);
+        try {
+            const response = await axiosInstance.post('account/register/', { 
+                username, email, password, password2 
+            });
+            // اگر بک‌اِند بعد از ثبت‌نام مستقیم لاگین می‌کند:
+            if (response.data?.user) setUser(response.data.user);
+            router.push('/');
+            return response.data;
+        } finally {
+            setAuthActionLoading(false);
+        }
+    }, [router]);
 
+    // ۴. منطق خروج (Logout)
     const logout = useCallback(async () => {
-    setLoading(true);
-    try {
-        // ۱. درخواست به بک‌اند برای پاک کردن کوکی
-        await axiosInstance.post('account/logout/'); 
-    } catch (error) {
-        console.error('Logout failed:', error);
-    } finally {
-        // ۲. پاک کردن استیت کاربر در فرانت (حتی اگر درخواست سرور خطا داد)
-        setUser(null);
-        setLoading(false);
-        // ۳. هدایت به صفحه اصلی یا لاگین
-        router.push('/login');
-    }
-}, [router]);
+        setAuthActionLoading(true);
+        try {
+            await axiosInstance.post('account/logout/'); 
+        } finally {
+            setUser(null);
+            setAuthActionLoading(false);
+            router.push('/login');
+        }
+    }, [router]);
 
     return {
         user,
-        loading,
+        loading,           // لودینگ کل اپلیکیشن در شروع
+        authActionLoading, // لودینگ دکمه‌های سابمیت
         login,
+        registerUser,
         logout,
-        getMe // برای مواقعی که لازم است دستی دیتا را بروزرسانی کنی
+        getMe
     };
 }
