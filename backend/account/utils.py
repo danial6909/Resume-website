@@ -7,6 +7,50 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 import re
 
+# ======== Error message translation map ========
+ERROR_TRANSLATIONS = {
+    # Common DRF errors
+    'This field is required.': 'این فیلد الزامی است.',
+    'This field may not be blank.': 'این فیلد نمی‌تواند خالی باشد.',
+    'This field may not be null.': 'این فیلد نمی‌تواند خالی باشد.',
+    'Enter a valid email address.': 'یک ایمیل معتبر وارد کنید.',
+    'Ensure this field has no more than {max_length} characters.': 'این فیلد نباید بیشتر از {max_length} کاراکتر باشد.',
+    'Ensure this field has at least {min_length} characters.': 'این فیلد باید حداقل {min_length} کاراکتر باشد.',
+
+    # Authentication errors
+    'No active account found with the given credentials': 'حساب کاربری فعالی با این مشخصات یافت نشد.',
+    'Invalid token.': 'توکن نامعتبر است.',
+    'Token is invalid or expired': 'توکن نامعتبر یا منقضی شده است.',
+
+    # Password validation errors
+    'This password is too short. It must contain at least 8 characters.': 'رمز عبور باید حداقل ۸ کاراکتر باشد.',
+    'This password is too common.': 'این رمز عبور بسیار رایج است.',
+    'This password is entirely numeric.': 'رمز عبور نمی‌تواند فقط عدد باشد.',
+    'The password is too similar to the username.': 'رمز عبور نباید شبیه نام کاربری باشد.',
+}
+
+
+def translate_error_message(message):
+    """
+    Translate English DRF/Django error messages to Persian
+    """
+    if isinstance(message, str):
+        # Check exact match
+        if message in ERROR_TRANSLATIONS:
+            return ERROR_TRANSLATIONS[message]
+
+        # Check partial match for dynamic messages (like max_length)
+        for eng, fa in ERROR_TRANSLATIONS.items():
+            if '{' in eng:  # Dynamic message
+                # Simple pattern matching (you can improve this)
+                base_eng = eng.split('{')[0].strip()
+                if message.startswith(base_eng):
+                    return message  # Return as-is or implement smart replacement
+
+        return message  # Return original if no translation found
+
+    return message
+
 
 def custom_exception_handler(exception, context):
     response = exception_handler(exception, context)

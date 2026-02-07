@@ -36,7 +36,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class UserInfoSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source='username', read_only=True)
+    username = serializers.CharField(read_only=True)
     image = serializers.SerializerMethodField()
 
     class Meta:
