@@ -36,11 +36,12 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class UserInfoSerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField()
+    username = serializers.CharField(source='username', read_only=True)
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
-        fields = ['user']
+        fields = ['username', 'image']
 
     @extend_schema_field(inline_serializer(
         name='UserDetailResponse',
@@ -49,7 +50,7 @@ class UserInfoSerializer(serializers.ModelSerializer):
             'image': serializers.URLField(),
         }
     ))
-    def get_user(self, obj):
+    def get_image(self, obj):
         request = self.context.get('request')
 
         image_url = None
@@ -62,13 +63,9 @@ class UserInfoSerializer(serializers.ModelSerializer):
             image_url = static('images/profile_pics/profile_image_default.png')
 
         if request and image_url:
-            image = request.build_absolute_uri(image_url)
+            image_url = request.build_absolute_uri(image_url)
 
-        return {
-            'username': obj.username,
-            'image': image_url,
-        }
-
+        return image_url
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True)
