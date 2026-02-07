@@ -4,7 +4,8 @@ from .utils import get_tokens_for_user, set_auth_cookies, delete_auth_cookies
 from .models import Profile
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
-from rest_framework import status
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import status, serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import RetrieveUpdateAPIView, GenericAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -24,7 +25,13 @@ class RegisterAPIView(APIView):
 
     @extend_schema(
         request=UserRegisterSerializer,
-        responses={201: UserInfoSerializer}
+        responses={201: inline_serializer(  # ======== تغییر یافت ========
+            name='RegisterResponse',
+            fields={
+                'message': serializers.CharField(),
+                'user': UserInfoSerializer(),
+            }
+        )}
     )
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
@@ -48,7 +55,13 @@ class LoginAPIView(APIView):
 
     @extend_schema(
         request=LoginSerializer,
-        responses={200: UserInfoSerializer},
+        responses={200: inline_serializer(
+            name='LoginResponse',
+            fields={
+                'message': serializers.CharField(),
+                'user': UserInfoSerializer(),
+            }
+        )},
         description='Login and get user data with cookies'
     )
     def post(self, request):
