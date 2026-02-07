@@ -152,7 +152,9 @@ class UserMeAPIView(APIView):
              user = CustomUser.objects.select_related('profile').get(id=user.id)
 
          serializer = UserInfoSerializer(user, context={'request': request})
-         return Response(serializer.data)
+         return Response({
+            "user": UserInfoSerializer(user, context={'request':request}).data,
+        }, status=status.HTTP_200_OK)
 
 
 class UserCredentialsUpdateAPIView(RetrieveUpdateAPIView):
