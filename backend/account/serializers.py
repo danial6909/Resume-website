@@ -43,13 +43,6 @@ class UserInfoSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['username', 'image']
 
-    @extend_schema_field(inline_serializer(
-        name='UserDetailResponse',
-        fields={
-            'username': serializers.CharField(),
-            'image': serializers.URLField(),
-        }
-    ))
     def get_image(self, obj):
         request = self.context.get('request')
 
