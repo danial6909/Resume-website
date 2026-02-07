@@ -1,4 +1,9 @@
+from .serializers import UserRegisterSerializer, ProfileSerializer, UserCredentialsUpdateSerializer, \
+    PasswordChangeSerializer, PhoneNumberUpdateSerializer, LoginSerializer, UserInfoSerializer
+from .utils import get_tokens_for_user, set_auth_cookies, delete_auth_cookies
+from .models import Profile
 from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import RetrieveUpdateAPIView, GenericAPIView
@@ -7,13 +12,9 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import UserRegisterSerializer, ProfileSerializer, UserCredentialsUpdateSerializer, \
-    PasswordChangeSerializer, PhoneNumberUpdateSerializer, LoginSerializer, UserInfoSerializer
-from .models import Profile
-from django.contrib.auth import authenticate, get_user_model
-from .utils import get_tokens_for_user, set_auth_cookies, delete_auth_cookies
-from drf_spectacular.utils import extend_schema
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from django.contrib.auth import authenticate, get_user_model
 
 
 CustomUser = get_user_model()
@@ -96,8 +97,10 @@ class CookieTokenRefreshView(APIView):
 
             return set_auth_cookies(response, tokens)
 
-        except Exception:
-            raise ValidationError({"refresh_token": ["Invalid or expired refresh token"]})
+
+        except (InvalidToken, TokenError) as e:
+
+            raise ValidationError({"refresh_token": ["توکن نامعتبر یا منقضی شده است."]})
 
 
 class LogoutAPIView(APIView):
