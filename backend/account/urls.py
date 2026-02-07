@@ -11,4 +11,5 @@ urlpatterns = [
     path('change-credentials/', views.UserCredentialsUpdateAPIView.as_view(), name='credentials'),
     path('change-password/', views.PasswordChangeAPIView.as_view(), name='change_password'),
     path('change-phone_number/', views.PhoneNumberUpdateAPIView.as_view(), name='change_phone_number'),
+    path('me/', views.UserMeAPIView.as_view(), name='user-me'),
 ]

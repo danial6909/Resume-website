@@ -46,7 +46,7 @@ class UserInfoSerializer(serializers.ModelSerializer):
         name='UserDetailResponse',
         fields={
             'username': serializers.CharField(),
-            'image_url': serializers.URLField(),
+            'image': serializers.URLField(),
         }
     ))
     def get_user(self, obj):
@@ -66,7 +66,7 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
         return {
             'username': obj.username,
-            'image_url': image_url,
+            'image': image_url,
         }
 
 
@@ -77,8 +77,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['email', 'username', 'password', 'password2']
         extra_kwargs = {
-            'username': {'validators': []},
-            'email': {'validators': []},
+            'password': {'write_only': True},
         }
 
     def validate(self, data):

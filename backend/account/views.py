@@ -129,9 +129,13 @@ class UserMeAPIView(APIView):
 
      @extend_schema(responses={200: UserInfoSerializer})
      def get(self, request):
-         user = CustomUser.objects.select_related('profile').get(id=request.user.id)
-         serializer = UserInfoSerializer(user, context={'request': request})
+         # request.user already loaded by middleware
+         user = request.user
+         # Only fetch profile if not already loaded
+         if not hasattr(user, 'profile'):
+             user = CustomUser.objects.select_related('profile').get(id=user.id)
 
+         serializer = UserInfoSerializer(user, context={'request': request})
          return Response(serializer.data)
 
 
