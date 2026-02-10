@@ -31,7 +31,8 @@ class RegisterAPIView(APIView):
                 'message': drf_serializers.CharField(),
                 'user': UserInfoSerializer(),
             }
-        )}
+        )},
+        description="این ای پی ای برای عملیات ثبت نام هست، که بلافاصله بعد از ثبت نام به طور خودکار کاربر لاگین میشه."
     )
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
@@ -62,7 +63,7 @@ class LoginAPIView(APIView):
                 'user': UserInfoSerializer(),
             }
         )},
-        description='Login and get user data with cookies'
+        description='این ای پی ای برای لاگین کردن هست.'
     )
     def post(self, request):
         serializer = LoginSerializer(data=request.data)

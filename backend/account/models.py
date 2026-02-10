@@ -7,8 +7,8 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(unique=True, max_length=40)
-    email = models.EmailField(unique=True, blank=True, max_length=60)
-    phone_number = models.CharField(unique=True, blank=True,null=True, max_length=13)
+    email = models.EmailField(unique=True, max_length=60)
+    phone_number = models.CharField(unique=True, blank=True, null=True, max_length=13)
     is_staff = models.BooleanField(default=False,
                                    help_text="Designates whether the user can log into this admin site.")
     is_active = models.BooleanField(default=True,

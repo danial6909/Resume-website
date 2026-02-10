@@ -16,6 +16,8 @@ ERROR_TRANSLATIONS = {
     'Enter a valid email address.': 'یک ایمیل معتبر وارد کنید.',
     'Ensure this field has no more than {max_length} characters.': 'این فیلد نباید بیشتر از {max_length} کاراکتر باشد.',
     'Ensure this field has at least {min_length} characters.': 'این فیلد باید حداقل {min_length} کاراکتر باشد.',
+    'Custom User with this email already exists.': 'این ایمیل قبلاً ثبت شده است.',
+    'Custom User with this username already exists.': 'این نام کاربری قبلاً انتخاب شده است.',
 
     # Authentication errors
     'No active account found with the given credentials': 'حساب کاربری فعالی با این مشخصات یافت نشد.',
@@ -27,6 +29,7 @@ ERROR_TRANSLATIONS = {
     'This password is too common.': 'این رمز عبور بسیار رایج است.',
     'This password is entirely numeric.': 'رمز عبور نمی‌تواند فقط عدد باشد.',
     'The password is too similar to the username.': 'رمز عبور نباید شبیه نام کاربری باشد.',
+    'The password is too similar to the email.': 'رمز عبور نباید شبیه ایمیل باشد.',
 }
 
 
@@ -39,18 +42,27 @@ def translate_error_message(message):
         if message in ERROR_TRANSLATIONS:
             return ERROR_TRANSLATIONS[message]
 
-        # Check partial match for dynamic messages (like max_length)
-        for eng, fa in ERROR_TRANSLATIONS.items():
-            if '{' in eng:  # Dynamic message
-                # Simple pattern matching (you can improve this)
-                base_eng = eng.split('{')[0].strip()
-                if message.startswith(base_eng):
-                    return message  # Return as-is or implement smart replacement
+        # ======== بهبود برای dynamic messages ========
+        # Check for "Ensure this field has at least X characters"
+        if message.startswith("Ensure this field has at least"):
+            import re
+            match = re.search(r'at least (\d+) character', message)
+            if match:
+                num = match.group(1)
+                return f"این فیلد باید حداقل {num} کاراکتر باشد."
+
+        # Check for "Ensure this field has no more than X characters"
+        if message.startswith("Ensure this field has no more than"):
+            import re
+            match = re.search(r'no more than (\d+) character', message)
+            if match:
+                num = match.group(1)
+                return f"این فیلد نباید بیشتر از {num} کاراکتر باشد."
+        # ======== ========
 
         return message  # Return original if no translation found
 
     return message
-
 
 def custom_exception_handler(exception, context):
     response = exception_handler(exception, context)
@@ -83,9 +95,12 @@ def custom_exception_handler(exception, context):
 
         if isinstance(response.data, dict):
             for field, errors in response.data.items():
-                custom_data["errors"][field] = errors if isinstance(errors, list) else [errors]
+                if isinstance(errors, list):
+                    custom_data["errors"][field] = [translate_error_message(err) for err in errors]
+                else:
+                    custom_data["errors"][field] = [translate_error_message(errors)]
         elif isinstance(response.data, list):
-            custom_data["errors"]["non_field_errors"] = response.data
+            custom_data["errors"]["non_field_errors"] = [translate_error_message(err) for err in response.data]
 
         response.data = custom_data
         return response
