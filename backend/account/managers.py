@@ -5,7 +5,11 @@ from django.contrib.auth.models import BaseUserManager
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
         if not username:
-            raise ValueError('Users must have an username')
+            raise ValueError('کاربر باید یک یوزرنیم داشته باشد.')
+
+        if not email:
+            raise ValueError('کاربر باید یک ایمیل داشته باشد.')
+
 
         user = self.model(username=username, email=self.normalize_email(email), **extra_fields)
         user.set_password(password)

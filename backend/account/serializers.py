@@ -61,51 +61,64 @@ class UserInfoSerializer(serializers.ModelSerializer):
         return image_url
 
 class UserRegisterSerializer(serializers.ModelSerializer):
-    password2 = serializers.CharField(write_only=True)
+    password2 = serializers.CharField(write_only=True, style={'input_type': 'password'})
 
     class Meta:
         model = CustomUser
         fields = ['email', 'username', 'password', 'password2']
         extra_kwargs = {
-            'password': {'write_only': True},
+            'username': {
+                'min_length': 3,
+                'max_length': 30,
+            },
+            'password': {
+                'write_only': True,
+                'style': {'input_type': 'password'},
+            },
         }
+
+    def validate_username(self, value):
+        username = value.lower().strip()
+
+        if CustomUser.objects.filter(username=username).exists():
+            raise serializers.ValidationError(["این نام کاربری قبلاً انتخاب شده است."])
+
+        return username
+
+    def validate_email(self, value):
+        email = value.strip().lower()
+
+        if CustomUser.objects.filter(email=email).exists():
+            raise serializers.ValidationError(["این ایمیل قبلاً ثبت شده است."])
+
+        return email
+
+    def validate_password(self, value):
+        """
+        استفاده از Django Password Validators که در settings تعریف شدن
+        خطاها توسط translate_error_message در utils ترجمه میشن
+        """
+        try:
+            # استفاده از validator های تعریف شده در settings.AUTH_PASSWORD_VALIDATORS
+            validate_password(value)
+        except DjangoValidationError as e:
+            # خطاها رو از utils.translate_error_message رد می‌کنیم
+            from .utils import translate_error_message
+            translated_errors = [translate_error_message(msg) for msg in e.messages]
+            raise serializers.ValidationError(translated_errors)
+        return value
 
     def validate(self, data):
         errors = {}
 
-        username = data.get('username', '').strip().lower()
-        email = data.get('email', '').strip().lower()
         password = data.get('password', '')
         password2 = data.get('password2', '')
 
-        if not username:
-            errors['username'] = ["وارد کردن نام کاربری الزامی است."]
-        elif len(username) < 3:
-            errors['username'] = ["نام کاربری باید حداقل ۳ کاراکتر باشد."]
-        elif CustomUser.objects.filter(username=username).exists():
-            errors['username'] = ["این نام کاربری قبلاً انتخاب شده است."]
-
-        if not email:
-            errors['email'] = ["وارد کردن ایمیل الزامی است."]
-        elif CustomUser.objects.filter(email=email).exists():
-            errors['email'] = ["این ایمیل قبلاً ثبت شده است."]
-
-        if not password:
-            errors['password'] = ["وارد کردن رمز عبور الزامی است."]
-        else:
-            try:
-                validate_password(password, user=CustomUser)
-            except DjangoValidationError as e:
-                errors['password'] = list(e.messages)
-
         if password and password2 and password != password2:
-            errors['password2'] = ["پسوردها مطابقت ندارند."]
+            raise serializers.ValidationError({
+                'password2': ["رمز عبورها مطابقت ندارند."]
+            })
 
-        if errors:
-            raise serializers.ValidationError(errors)
-
-        data['username'] = username
-        data['email'] = email
         return data
 
     def create(self, validated_data):
@@ -121,7 +134,7 @@ class LoginSerializer(serializers.Serializer):
         username = value.lower().strip()
 
         if not CustomUser.objects.filter(username=username).exists():
-            raise serializers.ValidationError({'username': ["این نام کاربری در سیستم وجود ندارد."]})
+            raise serializers.ValidationError(["این نام کاربری در سیستم وجود ندارد."])
         return username
 
     def validate(self, data):
@@ -144,7 +157,7 @@ class UserCredentialsUpdateSerializer(serializers.Serializer):
     def validate_current_password(self, value):
         user = self.context['request'].user
         if not user.check_password(value):
-            raise serializers.ValidationError({'current_password': ["پسورد فعلی وارد شده اشتباه است."]})
+            raise serializers.ValidationError(["پسورد فعلی وارد شده اشتباه است."])
         return value
 
     def validate(self, data):
@@ -192,7 +205,7 @@ class PasswordChangeSerializer(serializers.Serializer):
         user = self.context['request'].user
 
         if not user.check_password(value):
-            raise serializers.ValidationError({'old_password': ["پسورد فعلی وارد شده اشتباه است."]})
+            raise serializers.ValidationError(["پسورد فعلی وارد شده اشتباه است."])
         return value
 
     def validate(self, data):
@@ -224,7 +237,7 @@ class PhoneNumberUpdateSerializer(serializers.Serializer):
         user = self.context['request'].user
 
         if not user.check_password(value):
-            raise serializers.ValidationError({"current_password": ["پسورد فعلی وارد شده اشتباه است."]})
+            raise serializers.ValidationError(["پسورد فعلی وارد شده اشتباه است."])
         return value
 
     def validate_phone_number(self, value):
@@ -232,7 +245,7 @@ class PhoneNumberUpdateSerializer(serializers.Serializer):
 
         if value != user.phone_number:
             if CustomUser.objects.filter(phone_number=value).exists():
-                raise serializers.ValidationError({"phone_number": ['این شماره تلفن در حال حاضر وجود دارد.']})
+                raise serializers.ValidationError(['این شماره تلفن در حال حاضر وجود دارد.'])
         return value
 
     def update(self, instance, validated_data):
