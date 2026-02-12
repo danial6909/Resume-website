@@ -6,6 +6,49 @@ from rest_framework.response import Response
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 import re
+import random
+from django.core.mail import send_mail
+from .models import EmailVerification
+from django.utils import timezone
+
+
+def generate_unique_verification_code():
+    import string
+    # we make a function to check the generated code doesn't exist in database.
+    while True:
+        code = ''.join(random.choices(string.digits, k=6))
+
+        if not EmailVerification.objects.filter(code=code).exists():
+            return code
+
+
+def send_verification_email(username, email, hashed_password):
+    # Generate Code
+    code = generate_unique_verification_code()
+
+    ten_minutes_ago = timezone.now() - timezone.timedelta(minutes=10)
+    EmailVerification.objects.filter(created_at__lt=ten_minutes_ago).delete()
+
+    # Temporary create New instance of EmailVerification model.
+    EmailVerification.objects.update_or_create(
+        email=email,
+        defaults={
+            'username': username,
+            'password': hashed_password,
+            'code': code,
+            'created_at': timezone.now()
+        }
+    )
+
+    subjects = 'کد تایید ثبت‌نام'
+    message = f'کد تایید شما: {code}\nاین کد تا ۲ دقیقه دیگر منقضی می‌شود.'
+    email_from = settings.EMAIL_HOST_USER
+    recipient_list = [email]
+
+    send_mail(subjects, message, email_from, recipient_list)
+
+    return code
+
 
 # ======== Error message translation map ========
 ERROR_TRANSLATIONS = {
@@ -45,7 +88,6 @@ def translate_error_message(message):
         # ======== بهبود برای dynamic messages ========
         # Check for "Ensure this field has at least X characters"
         if message.startswith("Ensure this field has at least"):
-            import re
             match = re.search(r'at least (\d+) character', message)
             if match:
                 num = match.group(1)
@@ -53,7 +95,6 @@ def translate_error_message(message):
 
         # Check for "Ensure this field has no more than X characters"
         if message.startswith("Ensure this field has no more than"):
-            import re
             match = re.search(r'no more than (\d+) character', message)
             if match:
                 num = match.group(1)

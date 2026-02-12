@@ -2,10 +2,11 @@ from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import validate_email
 from rest_framework import serializers
-from .models import Profile
+from .models import Profile, EmailVerification
 from django.templatetags.static import static
 from django.core.exceptions import ValidationError as DjangoValidationError
 from drf_spectacular.utils import extend_schema_field, inline_serializer
+from django.contrib.auth.hashers import make_password
 
 
 
@@ -59,6 +60,42 @@ class UserInfoSerializer(serializers.ModelSerializer):
             image_url = request.build_absolute_uri(image_url)
 
         return image_url
+
+
+class EmailVerificationSerializer(serializers.Serializer):
+    code = serializers.CharField(required=True, min_length=6, max_length=6)
+
+    def validate(self, data):
+        code = data.get('code')
+        email = self.context['request'].COOKIES.get('user_email_pending')
+
+        if not email:
+            raise serializers.ValidationError({"code": ["اطلاعات نشست شما منقضی شده است."]})
+
+        verification = EmailVerification.objects.filter(email=email, code=code).first()
+        if not verification:
+            raise serializers.ValidationError({"code": ["کد وارد شده اشتباه است یا وجود ندارد."]})
+
+        if verification.is_expired():
+            raise serializers.ValidationError({"code": ["کد منقضی شده است. لطفاً درخواست کد جدید بدهید."]})
+
+        # we write a new object so we can access verification in save method
+        data['verification_obj'] = verification
+        return data
+
+    def save(self, **kwargs):
+        verification = self.validated_data['verification_obj']
+
+        user = CustomUser.objects.create_user(
+            username=verification.username,
+            email=verification.email,
+            password=verification.password
+        )
+
+        # we clear temporary table created.
+        verification.delete()
+
+        return user
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True, style={'input_type': 'password'})
@@ -123,7 +160,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('password2')
-        return CustomUser.objects.create_user(**validated_data)
+        validated_data['password'] = make_password(validated_data['password'])
+        return validated_data
 
 
 class LoginSerializer(serializers.Serializer):

@@ -37,3 +37,15 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+class EmailVerification(models.Model):
+    username = models.CharField(max_length=30)
+    email = models.EmailField()
+    password = models.CharField(max_length=128)
+    code = models.CharField(max_length=6, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_expired(self):
+        from django.utils import timezone
+        return timezone.now() > self.created_at + timezone.timedelta(minutes=2)
