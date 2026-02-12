@@ -6,8 +6,10 @@ import * as z from "zod";
 import styles from "./SignUpForm.module.css";
 import ParticlesBackground from "../LoginBackground/ParticlesBackground";
 import { useAuth } from "@/context/AuthContext";
+import OTPInput from "./OTPInput";
+import { useRouter } from "next/navigation";
 
-// تعریف قوانین ثبت‌نام با Zod
+// ۱. تعریف قوانین اعتبارسنجی
 const signUpSchema = z
   .object({
     username: z.string().min(3, "نام کاربری باید حداقل ۳ کاراکتر باشد"),
@@ -15,19 +17,22 @@ const signUpSchema = z
     password: z
       .string()
       .min(8, "رمز عبور باید حداقل 8 کاراکتر باشد")
-      .max(128, "رمز عبور باید حداکثر 128 کاراکترباشد"),
+      .max(128, "رمز عبور باید حداکثر 128 کاراکتر باشد"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "رمز عبور و تکرار آن یکسان نیستند",
-    path: ["confirmPassword"], // ارور را روی فیلد تکرار رمز نشان می‌دهد
+    path: ["confirmPassword"],
   });
 
 export default function SignUpForm() {
-  const { authActionLoading, registerUser } = useAuth();
-
-  // استیت‌های فوکوس برای انیمیشن لبل‌ها
+  const { authActionLoading, registerUser, verifyEmail } = useAuth();
+  const [isSuccess, setIsSuccess] = useState(false); // ۱. استیت موفقیت اضافه شد
+  // استیت‌های مدیریت مرحله و اطلاعات کاربر
+  const [step, setStep] = useState(2);
+  const [userEmail, setUserEmail] = useState("");
   const [focusFields, setFocusFields] = useState({});
+  const router = useRouter();
 
   const {
     register,
@@ -47,10 +52,13 @@ export default function SignUpForm() {
 
   const values = watch();
 
+  // هندل کردن انیمیشن Label ها
   const handleFocus = (field) =>
     setFocusFields((prev) => ({ ...prev, [field]: true }));
   const handleBlur = (field) =>
     setFocusFields((prev) => ({ ...prev, [field]: false }));
+
+  // مرحله اول: ثبت‌نام اولیه
   const onSubmit = async (data) => {
     try {
       await registerUser(
@@ -59,38 +67,27 @@ export default function SignUpForm() {
         data.password,
         data.confirmPassword,
       );
-      alert("ثبت‌نام با موفقیت انجام شد!");
+      setUserEmail(data.email);
+      setStep(2); // انتقال به مرحله تایید کد
     } catch (error) {
-      if (error.response && error.response.data) {
-        // استخراج خطاها (اول فیلد errors و اگر نبود کل دیتا)
+      if (error.response?.data) {
         const serverErrors = error.response.data.errors || error.response.data;
-        console.log(serverErrors)
 
-        // بررسی امن برای جلوگیری از کرش (شرطی که پرسیدی)
         if (serverErrors && typeof serverErrors === "object") {
           Object.keys(serverErrors).forEach((field) => {
             const errorData = serverErrors[field];
-            let message = "";
+            const message = Array.isArray(errorData)
+              ? errorData.map((msg) => `• ${msg}`).join("\n")
+              : `• ${errorData}`;
 
-            if (Array.isArray(errorData)) {
-              // ساخت لیست نقطه‌دار برای آرایه‌ها
-              message = errorData.map((msg) => `• ${msg}`).join("\n");
-            } else {
-              message = `• ${errorData}`;
-            }
-
-            setError(field, {
-              type: "server",
-              message: message,
-            });
+            setError(field, { type: "server", message });
           });
         } else {
-          // اگر خطا به صورت متن ساده بود (مثل خطای دیتابیس یا سرور)
           setError("root", {
             message:
               typeof serverErrors === "string"
                 ? serverErrors
-                : "خطایی در اتصال به سرور رخ داد",
+                : "خطای غیرمنتظره سرور",
           });
         }
       } else {
@@ -99,133 +96,166 @@ export default function SignUpForm() {
     }
   };
 
+  const handleVerifyOTP = async (otp) => {
+    try {
+      await verifyEmail(userEmail, otp);
+      setIsSuccess(true); // ۲. اگر خطایی نبود، موفقیت رو فعال کن
+
+      // ۳. ریدایرکت بعد از چند ثانیه برای اینکه کاربر پیام رو ببینه
+      setTimeout(() => {
+        router.push("/");
+      }, 3000);
+    } catch (error) {
+      setError("otp", { message: "کد وارد شده صحیح نیست یا منقضی شده است" });
+    }
+  };
+
   return (
     <div className={styles.container}>
       <ParticlesBackground />
 
       <div className={styles.formContainer}>
-        <h1 className={styles.formTitle}>ثبت‌نام</h1>
-        <div className={styles.formDivider}></div>
-
-        <form
-          className={styles.form}
-          onSubmit={handleSubmit(onSubmit)}
-          noValidate
-        >
-          {/* فیلد نام کاربری */}
-          <div className={styles.formGroup}>
-            <label
-              className={`${styles.formLabel} ${focusFields.username || values.username ? styles.floating : ""}`}
-            >
-              نام کاربری
-            </label>
-            <input
-              {...register("username")}
-              onFocus={() => handleFocus("username")}
-              onBlur={() => handleBlur("username")}
-              className={`${styles.formInput} ${errors.username ? styles.inputError : ""}`}
-              dir="ltr"
-            />
-            {errors.username && (
-              <span className={styles.errorMessage}>
-                {errors.username.message}
-              </span>
-            )}
+        {/* بخش نمایش موفقیت نهایی */}
+        {isSuccess ? (
+          <div className={styles.successWrapper}>
+            <div className={styles.successIcon}>✓</div>
+            <h2 className={styles.successTitle}>خوش آمدی، دانیال عزیز!</h2>
+            <p className={styles.successText}>
+              ایمیل تو با موفقیت تایید شد. در حال انتقال به صفحه اصلی...
+            </p>
+            <div className={styles.miniLoader}></div>
           </div>
+        ) : (
+          <>
+            <h1 className={styles.formTitle}>
+              {step === 1 ? "ثبت‌نام" : "تایید ایمیل"}
+            </h1>
+            <div className={styles.formDivider}></div>
 
-          {/* فیلد ایمیل */}
-          <div className={styles.formGroup}>
-            <label
-              className={`${styles.formLabel} ${focusFields.email || values.email ? styles.floating : ""}`}
-            >
-              ایمیل
-            </label>
-            <input
-              {...register("email")}
-              onFocus={() => handleFocus("email")}
-              onBlur={() => handleBlur("email")}
-              className={`${styles.formInput} ${errors.email ? styles.inputError : ""}`}
-              placeholder="you@company.com"
-              dir="ltr"
-            />
-            {errors.email && (
-              <span className={styles.errorMessage}>
-                {errors.email.message}
-              </span>
+            {step === 1 ? (
+              <form
+                className={styles.form}
+                onSubmit={handleSubmit(onSubmit)}
+                noValidate
+              >
+                <div className={styles.formGroup}>
+                  <label
+                    className={`${styles.formLabel} ${focusFields.username || values.username ? styles.floating : ""}`}
+                  >
+                    نام کاربری
+                  </label>
+                  <input
+                    {...register("username")}
+                    onFocus={() => handleFocus("username")}
+                    onBlur={() => handleBlur("username")}
+                    className={`${styles.formInput} ${errors.username ? styles.inputError : ""}`}
+                    dir="ltr"
+                  />
+                  {errors.username && (
+                    <span className={styles.errorMessage}>
+                      {errors.username.message}
+                    </span>
+                  )}
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label
+                    className={`${styles.formLabel} ${focusFields.email || values.email ? styles.floating : ""}`}
+                  >
+                    ایمیل
+                  </label>
+                  <input
+                    {...register("email")}
+                    onFocus={() => handleFocus("email")}
+                    onBlur={() => handleBlur("email")}
+                    className={`${styles.formInput} ${errors.email ? styles.inputError : ""}`}
+                    placeholder="you@company.com"
+                    dir="ltr"
+                  />
+                  {errors.email && (
+                    <span className={styles.errorMessage}>
+                      {errors.email.message}
+                    </span>
+                  )}
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label
+                    className={`${styles.formLabel} ${focusFields.password || values.password ? styles.floating : ""}`}
+                  >
+                    رمز عبور
+                  </label>
+                  <input
+                    type="password"
+                    {...register("password")}
+                    onFocus={() => handleFocus("password")}
+                    onBlur={() => handleBlur("password")}
+                    className={`${styles.formInput} ${errors.password ? styles.inputError : ""}`}
+                    placeholder="••••••••"
+                    dir="ltr"
+                  />
+                  {errors.password && (
+                    <span className={styles.errorMessage}>
+                      {errors.password.message}
+                    </span>
+                  )}
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label
+                    className={`${styles.formLabel} ${focusFields.confirmPassword || values.confirmPassword ? styles.floating : ""}`}
+                  >
+                    تکرار رمز عبور
+                  </label>
+                  <input
+                    type="password"
+                    {...register("confirmPassword")}
+                    onFocus={() => handleFocus("confirmPassword")}
+                    onBlur={() => handleBlur("confirmPassword")}
+                    className={`${styles.formInput} ${errors.confirmPassword ? styles.inputError : ""}`}
+                    placeholder="••••••••"
+                    dir="ltr"
+                  />
+                  {errors.confirmPassword && (
+                    <span className={styles.errorMessage}>
+                      {errors.confirmPassword.message}
+                    </span>
+                  )}
+                </div>
+
+                {errors.root && (
+                  <div
+                    className={styles.errorMessage}
+                    style={{ textAlign: "center", marginBottom: "10px" }}
+                  >
+                    {errors.root.message}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  className={styles.formSubmitBtn}
+                  disabled={authActionLoading}
+                >
+                  {authActionLoading
+                    ? "در حال ارسال..."
+                    : "ثبت‌نام و دریافت کد"}
+                </button>
+              </form>
+            ) : (
+              <OTPInput
+                email={userEmail}
+                onComplete={handleVerifyOTP}
+                onBack={() => setStep(1)}
+                serverError={errors.otp?.message}
+              />
             )}
-          </div>
 
-          {/* فیلد رمز عبور */}
-          <div className={styles.formGroup}>
-            <label
-              className={`${styles.formLabel} ${focusFields.password || values.password ? styles.floating : ""}`}
-            >
-              رمز عبور
-            </label>
-            <input
-              type="password"
-              {...register("password")}
-              onFocus={() => handleFocus("password")}
-              onBlur={() => handleBlur("password")}
-              className={`${styles.formInput} ${errors.password ? styles.inputError : ""}`}
-              placeholder="••••••••"
-              dir="ltr"
-            />
-            {errors.password && (
-              <span className={styles.errorMessage}>
-                {errors.password.message}
-              </span>
-            )}
-          </div>
-
-          {/* فیلد تکرار رمز عبور */}
-          <div className={styles.formGroup}>
-            <label
-              className={`${styles.formLabel} ${focusFields.confirmPassword || values.confirmPassword ? styles.floating : ""}`}
-            >
-              تکرار رمز عبور
-            </label>
-            <input
-              type="password"
-              {...register("confirmPassword")}
-              onFocus={() => handleFocus("confirmPassword")}
-              onBlur={() => handleBlur("confirmPassword")}
-              className={`${styles.formInput} ${errors.confirmPassword ? styles.inputError : ""}`}
-              placeholder="••••••••"
-              dir="ltr"
-            />
-            {errors.confirmPassword && (
-              <span className={styles.errorMessage}>
-                {errors.confirmPassword.message}
-              </span>
-            )}
-          </div>
-
-          {errors.root && (
-            <div
-              className={styles.errorMessage}
-              style={{
-                position: "static",
-                textAlign: "center",
-                marginBottom: "10px",
-              }}
-            >
-              {errors.root.message}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            className={styles.formSubmitBtn}
-            disabled={authActionLoading}
-          >
-            {authActionLoading ? "در حال ثبت‌نام..." : "ثبت‌نام"}
-          </button>
-        </form>
-
-        <p className={styles.signupText}>
-          قبلاً ثبت‌نام کرده‌اید؟ <a href="/login">وارد شوید</a>
-        </p>
+            <p className={styles.signupText}>
+              قبلاً ثبت‌نام کرده‌اید؟ <a href="/login">وارد شوید</a>
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

@@ -163,10 +163,8 @@ export default function LoginForm() {
           )}
 
           <div className={styles.formRow}>
-            <label className={styles.remember}>
-              <input type="checkbox" />
-              مرا به خاطر بسپار
-            </label>
+           
+            
             <a href="/forgetPassword" className={styles.forgot}>
               فراموشی رمز عبور
             </a>
