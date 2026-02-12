@@ -58,16 +58,76 @@ export function useAuthLogic() {
           password,
           password2,
         });
-        // اگر بک‌اِند بعد از ثبت‌نام مستقیم لاگین می‌کند:
-        if (response.data?.user) setUser(response.data.user);
-        router.push("/");
-        return response.data;
+        // اینجا دیگه روت رو عوض نمی‌کنیم، چون باید کد تایید بگیره
+        return response.data; 
       } finally {
         setAuthActionLoading(false);
       }
     },
-    [router],
+    []
   );
+
+  // ۴. مرحله دوم: تایید کد ۶ رقمی
+  const verifyEmail = useCallback(
+    async (email, otp) => {
+      setAuthActionLoading(true);
+      try {
+        const response = await axiosInstance.post("account/verify-otp/", {
+          email,
+          otp,
+        });
+        // بعد از تایید کد، کاربر لاگین می‌شود و اطلاعاتش برمی‌گردد
+        if (response.data?.user) setUser(response.data.user);
+        router.push("/");
+        // return response.data;
+        return ; // فقط برای تست کردن مرحله بعدی، چون هنوز سرور کد OTP رو برنمی‌گردونه
+      } finally {
+        setAuthActionLoading(false);
+      }
+    },
+    [router]
+  );
+
+
+//   const verifyEmail = useCallback(
+//   async (email, otp) => {
+//     setAuthActionLoading(true);
+//     try {
+//       // شبیه‌سازی تاخیر شبکه
+//       await new Promise((resolve) => setTimeout(resolve, 1500));
+
+//       // چک کردن کد دستی (بجای سرور)
+//       if (otp === "123456") {
+//         console.log("تبریک! کد درست بود.");
+        
+//         const mockUser = { username: "Danial", email: email };
+//         setUser(mockUser);
+        
+//         // این یعنی همه چیز اوکیه و SignUpForm میره برای نمایش Success
+//         return { success: true }; 
+//       } else {
+//         // شبیه‌سازی ارور سرور وقتی کد غلطه
+//         throw {
+//           response: {
+//             data: "کد وارد شده صحیح نیست. لطفاً دوباره تلاش کنید."
+//           }
+//         };
+//       }
+//     } finally {
+//       setAuthActionLoading(false);
+//     }
+//   },
+//   [setUser] // وابستگی‌ها رو دقیق بزار که استاندارد باشه
+// );
+
+  // ۵. ارسال مجدد کد
+  const resendOTP = useCallback(async (email) => {
+    try {
+      await axiosInstance.post("account/resend-otp/", { email });
+    } catch (error) {
+      console.error("خطا در ارسال مجدد کد", error);
+    }
+  }, []);
 
   // ۴. منطق خروج (Logout)
   const logout = useCallback(async () => {
@@ -87,6 +147,8 @@ export function useAuthLogic() {
     authActionLoading, // لودینگ دکمه‌های سابمیت
     login,
     registerUser,
+    verifyEmail,
+    resendOTP,
     logout,
     getMe,
   };
