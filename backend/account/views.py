@@ -1,7 +1,8 @@
 from .serializers import UserRegisterSerializer, ProfileSerializer, UserCredentialsUpdateSerializer, \
-    PasswordChangeSerializer, PhoneNumberUpdateSerializer, LoginSerializer, UserInfoSerializer
-from .utils import get_tokens_for_user, set_auth_cookies, delete_auth_cookies
-from .models import Profile
+    PasswordChangeSerializer, PhoneNumberUpdateSerializer, LoginSerializer, UserInfoSerializer, \
+    EmailVerificationSerializer
+from .utils import get_tokens_for_user, set_auth_cookies, delete_auth_cookies, send_verification_email
+from .models import Profile, EmailVerification
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers as drf_serializers
@@ -16,37 +17,121 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from django.contrib.auth import authenticate, get_user_model
+from django.conf import settings
+from django.utils import timezone
 
 
 CustomUser = get_user_model()
+
+class ResendVerificationEmailView(APIView):
+    permission_classes = (AllowAny,)
+    throttle_classes = (ScopedRateThrottle,)
+    throttle_scope = 'auth_limit'
+
+    def post(self, request, *args, **kwargs):
+        email = request.COOKIES.get('user_email_pending')
+
+        if not email:
+            return Response(
+                {"error": "اطلاعات نشست شما منقضی شده است. لطفا دوباره ثبت‌نام کنید."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        verification = EmailVerification.objects.filter(email=email).first()
+
+        if not verification:
+            return Response(
+                {"error": "درخواستی برای این ایمیل یافت نشد."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        time_elapsed = timezone.now() - verification.created_at
+        if time_elapsed < timezone.timedelta(minutes=2):
+            left_time = 120 - int(time_elapsed.total_seconds())
+            return Response(
+                {"error": f"لطفاً {left_time} ثانیه دیگر صبر کنید."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        send_verification_email(verification.username, email, verification.password)
+
+        return Response({"message": "کد تایید جدید ارسال شد."}, status=status.HTTP_200_OK)
+
+
+class VerifyEmailAPIView(APIView):
+    permission_classes = (AllowAny,)
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth_limit'
+
+    @extend_schema(
+        request=EmailVerificationSerializer,
+        responses={201: inline_serializer(
+            name='VerifyEmailResponse',
+            fields={
+                'message': drf_serializers.CharField(),
+                'user': UserInfoSerializer(),
+            }
+        )},
+        description='این ای پی ای برای تایید ایمیل با کد ارسالی است. پس از تایید، کاربر به صورت خودکار ساخته و لاگین می‌شود.'
+    )
+    def post(self, request):
+        serializer = EmailVerificationSerializer(
+            data=request.data,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.save() # since serializer did validate, activate user returns here
+
+        tokens = get_tokens_for_user(user)
+
+        response = Response({
+            "message": 'حساب کاربری شما با موفقیت فعال شد.',
+            "user": UserInfoSerializer(user, context={'request': request}).data,
+        }, status=status.HTTP_201_CREATED)
+
+        return set_auth_cookies(response, tokens)
 
 class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
         request=UserRegisterSerializer,
-        responses={201: inline_serializer(
+        responses={200: inline_serializer(
             name='RegisterResponse',
             fields={
                 'message': drf_serializers.CharField(),
-                'user': UserInfoSerializer(),
+                'email': drf_serializers.EmailField(),
             }
         )},
-        description="این ای پی ای برای عملیات ثبت نام هست، که بلافاصله بعد از ثبت نام به طور خودکار کاربر لاگین میشه."
+        description="این ای پی ای برای ارسال فرم ثبت نام است. پس از ارسال فرم، کد تایید به ایمیل کاربر ارسال می‌شود."
     )
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        user_with_profile = CustomUser.objects.select_related('profile').get(id=user.id)
-        tokens = get_tokens_for_user(user)
+        data = serializer.save()
+
+        # Send verification email:
+        send_verification_email(
+            username=data['username'],
+            email=data['email'],
+            hashed_password=data['password']
+        )
 
         response = Response({
-            "message": "ثبت نام با موفقیت انجام شد",
-            "user": UserInfoSerializer(user_with_profile, context={'request':request}).data,
-        }, status=status.HTTP_201_CREATED)
+            'message': f"کاربر {data['username']} عزیز، کد تایید برای شما ارسال شد.",
+        }, status=status.HTTP_200_OK)
 
-        return set_auth_cookies(response, tokens)
+        response.set_cookie(
+            'user_email_pending',
+            data['email'],
+            max_age = 600,
+            httponly = True,
+            samesite = 'None' if not settings.DEBUG else 'Lax',
+            secure = not settings.DEBUG,
+        )
+
+        return response
 
 
 class LoginAPIView(APIView):
