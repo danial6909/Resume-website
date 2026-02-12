@@ -27,12 +27,12 @@ const ServiceCard = ({ icon, title, description, slug }) => {
       variants={cardVariants}
       // در اینجا initial و whileInView نمی‌گذاریم چون پدر کنترلش می‌کند
       whileHover={{ y: -10, transition: { duration: 0.3 } }}
-      className="relative p-px border-2 border-border font-[vazir] overflow-hidden group rounded-xl transition-colors duration-500 hover:border-[#00bc91]"
+      className="relative p-px border-2 border-border font-[vazir] overflow-hidden group rounded-sm transition-colors duration-500 hover:border-[#00bc91]"
     >
       <div className="relative flex flex-col justify-between h-72 w-full max-sm:max-w-full max-w-sm p-6 bg-background backdrop-blur-xl rounded-[10px] z-10 transition-shadow duration-500 group-hover:shadow-xl group-hover:shadow-[#00bc91]/10">
         
         <div>
-          <div className="grid place-items-center w-12 h-12 bg-[#00bc91] text-white text-3xl rounded-lg shadow-lg shadow-[#00bc91]/20 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
+          <div className="grid place-items-center w-12 h-12 bg-[#00bc91] text-white text-3xl rounded-lg shadow-lg shadow-[#00bc91]/20 transition-transform duration-500 group-hover:scale-110 ">
             {icon}
           </div>
 
