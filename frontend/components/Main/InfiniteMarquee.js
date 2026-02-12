@@ -1,16 +1,24 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Marquee from "react-fast-marquee";
+import Image from "next/image"; // اضافه شد
 
 const technologies = [
-  "JavaScript", "TypeScript", "React.js", "Next.js", 
-  "Node.js", "MongoDB", "Tailwind", "Express"
+  { name: "JavaScript", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" },
+  { name: "TypeScript", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" },
+  { name: "React.js", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" },
+  { name: "Next.js", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" },
+  { name: "Node.js", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" },
+  // جایگزین‌های جدید طبق درخواست تو
+  { name: "Python", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" },
+  { name: "Django", logo: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/django/django-plain.svg" },
+  { name: "SQL", logo: "https://www.svgrepo.com/show/331760/sql-database-generic.svg" },
+  { name: "Tailwind", logo: "https://www.vectorlogo.zone/logos/tailwindcss/tailwindcss-icon.svg" },
 ];
 
 const InfiniteMarquee = () => {
   const [mounted, setMounted] = useState(false);
 
-  // برای جلوگیری از باگ‌های رندرینگ در Next.js
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -28,18 +36,27 @@ const InfiniteMarquee = () => {
         speed={60}
         pauseOnHover={true}
         gradient={false}
-        // autoFill={false}  <-- این رو کلا ننویس یا false بزار
         direction="left"
       >
-        {/* لیست رو دو بار رندر می‌کنیم تا فضای خالی ایجاد نشه */}
-        {[...technologies, ...technologies, ...technologies, ...technologies, ...technologies, ...technologies, ...technologies, ...technologies, ...technologies, ...technologies, ...technologies, ...technologies].map((tech, index) => (
+        {[...technologies, ...technologies, ...technologies, ...technologies, ...technologies].map((tech, index) => (
           <div
             key={index}
-            // اینجا min-w-[150px] گذاشتم که عرض آیتم‌ها مشخص باشه و کتابخانه گیج نشه
-            className="flex items-center justify-center min-w-[150px] px-8 py-4 mx-4 bg-surface/50 backdrop-blur-sm border border-border rounded-2xl group hover:border-primary-accent transition-all duration-300 cursor-pointer"
+            className="flex items-center justify-center gap-4 min-w-[200px] px-8 py-4 mx-4 bg-surface/50 backdrop-blur-sm border border-border rounded-2xl group hover:border-primary-accent transition-all duration-300 cursor-pointer"
           >
+            {/* استفاده از Image با سایز بهینه */}
+            <div className={`relative grayscale group-hover:grayscale-0 transition-all duration-300 ${
+              tech.name === "Tailwind" ? "h-7 w-9" : "h-7 w-7"
+            }`}>
+              <Image 
+                src={tech.logo} 
+                alt={tech.name} 
+                fill // استفاده از fill برای کنترل سایز توسط div پدر
+                className="object-contain"
+              />
+            </div>
+            
             <span className="text-text-faded group-hover:text-text-main font-bold text-lg select-none">
-              {tech}
+              {tech.name}
             </span>
           </div>
         ))}
@@ -49,8 +66,6 @@ const InfiniteMarquee = () => {
 };
 
 export default InfiniteMarquee;
-
-
 
 
 // "use client";

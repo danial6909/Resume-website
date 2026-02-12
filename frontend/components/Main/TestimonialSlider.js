@@ -4,7 +4,6 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Autoplay } from 'swiper/modules';
 import { Quote, Star } from 'lucide-react';
 
-// وارد کردن استایل‌های اصلی Swiper
 import 'swiper/css';
 import 'swiper/css/pagination';
 
@@ -34,28 +33,29 @@ const testimonials = [
 
 const TestimonialSlider = () => {
   return (
-    <div className="w-full  py-20 px-4" dir="rtl">
+    <div className="w-full py-20 px-4" dir="rtl">
       <div className="max-w-7xl mx-auto">
         
         <Swiper
           modules={[Pagination, Autoplay]}
           spaceBetween={30}
           slidesPerView={1}
-          
           autoplay={{ delay: 3000 }}
           pagination={{ clickable: true }}
           breakpoints={{
-            768: { slidesPerView: 2 }, // در تبلت و دسکتاپ ۲ اسلاید نمایش بده
+            768: { slidesPerView: 2 },
           }}
-          className="mySwiper !pb-16" // فاصله برای دات‌های پایین
+          // اضافه کردن پدینگ به اسلایدر برای اینکه آیکون‌های بیرون‌زده کارت‌ها بریده نشوند
+          className="mySwiper !pb-16 !pt-10" 
         >
           {testimonials.map((item, index) => (
             <SwiperSlide key={index}>
+              {/* حذف overflow-hidden برای اینکه آیکون Quote کامل دیده شود */}
               <div className="bg-background rounded-sm p-8 pt-12 relative border border-gray-800 flex flex-col items-center text-center">
                 
-                {/* آیکون کوتیشن بالا */}
-                <div className="absolute -top-5 right-10 ">
-                  <Quote size={40} className="text-[#10b981] fill-[#10b981]  opacity-80" />
+                {/* آیکون کوتیشن بالا - حالا کامل دیده می‌شود */}
+                <div className="absolute -top-5 right-10 z-10">
+                  <Quote size={40} className="text-[#10b981] fill-[#10b981] opacity-80" />
                 </div>
 
                 {/* تصویر پروفایل */}
@@ -92,7 +92,6 @@ const TestimonialSlider = () => {
 
       </div>
 
-      {/* استایل سفارشی برای دات‌های Swiper (این بخش را در فایل CSS اصلی هم می‌توانی بگذاری) */}
       <style jsx global>{`
         .swiper-pagination-bullet {
           background: #333 !important;
