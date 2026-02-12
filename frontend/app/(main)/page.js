@@ -2,7 +2,7 @@
 import Image from "next/image";
 import background9 from "@/public/background/background9.jpg";
 import back from "@/public/background/back.jpg";
-import ServiceCard from "@/components/Main/ServiceCard";
+import ServiceGrid from "@/components/Service/ServiceGrid";
 import AnimatedTitle from "@/components/AnimatedTitle";
 import StepWork from "@/components/Main/StepWork";
 import TestimonialSlider from "@/components/Main/TestimonialSlider";
@@ -86,47 +86,7 @@ export default function HomePage() {
         <AnimatedTitle title="خدمات ما" />
 
         {/* بخش خدمات - اصلاح گرید */}
-        <div className=" mx-auto px-4 mt-12 ">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center ">
-            <ServiceCard
-              icon={<WebIcon />}
-              title="توسعه وب"
-              description="طراحی و پیاده‌سازی وب‌سایت‌ها و اپلیکیشن‌های مدرن، واکنش‌گرا و بهینه."
-              readMore="بیشتر بخوانید"
-            />
-            <ServiceCard
-              icon={<MobileIcon />}
-              title="اپلیکیشن موبایل"
-              description="ساخت اپلیکیشن‌های نیتیو و کراس‌پلتفرم برای iOS و Android."
-              readMore="مشاهده جزئیات"
-            />
-            <ServiceCard
-              icon={<SeoIcon />}
-              title="سئو و مارکتینگ"
-              description="افزایش بازدید و رتبه سایت شما در گوگل با استراتژی‌های مدرن."
-              readMore="شروع کنید"
-            />
-            <ServiceCard
-              icon={<WebIcon />}
-              title="توسعه وب"
-              description="طراحی و پیاده‌سازی وب‌سایت‌ها و اپلیکیشن‌های مدرن، واکنش‌گرا و بهینه."
-              readMore="بیشتر بخوانید"
-            />
-            <ServiceCard
-              icon={<MobileIcon />}
-              title="اپلیکیشن موبایل"
-              description="ساخت اپلیکیشن‌های نیتیو و کراس‌پلتفرم برای iOS و Android."
-              readMore="مشاهده جزئیات"
-            />
-            <ServiceCard
-              icon={<SeoIcon />}
-              title="سئو و مارکتینگ"
-              description="افزایش بازدید و رتبه سایت شما در گوگل با استراتژی‌های مدرن."
-              readMore="شروع کنید"
-            />
-            {/* سایر کارت‌ها را اینجا اضافه کن */}
-          </div>
-        </div>
+      <ServiceGrid />
 
         <ProjectRoadmap />
 

@@ -10,7 +10,7 @@ import {
   Code2,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import NebulaInput from "../NebulaInput";
+import ContactForm from "../Contact/ContactForm";
 
 const Footer = () => {
   // تعریف واریانت برای کل کانتینر فوتر
@@ -120,27 +120,8 @@ const Footer = () => {
         {/* ستون چهارم: فرم تماس */}
         <motion.div variants={itemVariants} className="lg:col-span-1">
           <h3 className="text-lg font-bold text-foreground mb-4">ارسال پیام</h3>
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-2">
-              <NebulaInput label="نام" id="fname" name="firstname" />
-              <NebulaInput label="ایمیل" id="email" name="email" type="email" />
-            </div>
-            <NebulaInput
-              label="پیام..."
-              id="message"
-              name="message"
-              type="textarea"
-              rows="2"
-              className="resize-none"
-            />
-            <button className="flex items-center gap-2 bg-primary-accent text-white w-full py-2.5 rounded-lg hover:opacity-90 transition-all font-bold group cursor-pointer justify-center text-sm shadow-lg shadow-primary-accent/20">
-              ارسال پیام
-              <Send
-                size={16}
-                className="group-hover:rotate-12 transition-transform"
-              />
-            </button>
-          </div>
+          {/* استفاده از کامپوننت جدید */}
+          <ContactForm />
         </motion.div>
       </motion.div>
 

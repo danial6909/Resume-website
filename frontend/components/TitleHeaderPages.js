@@ -18,7 +18,7 @@ export default function TitleHeaderPages({title1,title2}) {
     >
       <div className="relative">
         {/* عدد بزرگ محو در پس‌زمینه (مثلا 01 یا Resume) */}
-        <span className="  absolute -top-8 -right-4 text-8xl font-black text-text-main/[0.03] select-none font-sans">
+        <span className="absolute -top-8 right-0 text-5xl md:text-8xl font-black text-text-main/[0.03] select-none font-sans whitespace-nowrap pointer-events-none text-right">
           {title1}
         </span>
 

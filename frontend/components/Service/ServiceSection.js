@@ -4,7 +4,7 @@ import ServiceGrid from "./ServiceGrid";
 import ProcessTimeline from "./ProcessTimeline";
 import PricingPlans from "./PricingPlans";
 import FAQSection from "./FAQSection";
-import ContactCTA from "./ContactCTA";
+
 
 export default function Service() {
   return (
@@ -17,7 +17,7 @@ export default function Service() {
       <ProcessTimeline />
       <PricingPlans />
       <FAQSection />
-      <ContactCTA />
+      
 
       <style jsx global>{`
         .animate-spin-slow { animation: spin 8s linear infinite; }
