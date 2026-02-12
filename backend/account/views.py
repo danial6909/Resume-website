@@ -27,6 +27,7 @@ class ResendVerificationEmailView(APIView):
     permission_classes = (AllowAny,)
     throttle_classes = (ScopedRateThrottle,)
     throttle_scope = 'auth_limit'
+    serializer_class = None
 
     def post(self, request, *args, **kwargs):
         email = request.COOKIES.get('user_email_pending')
