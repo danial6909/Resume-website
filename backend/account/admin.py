@@ -7,10 +7,10 @@ from .models import CustomUser
 class CustomUserAdmin(UserAdmin):
     list_display = ['username', 'email', 'is_staff', 'is_active',]
     fieldsets = UserAdmin.fieldsets +(
-    (None, {'fields': ('phone_number',)}),
+    (None, {'fields': ('is_active',)}),
     )
     add_fieldsets = UserAdmin.add_fieldsets +(
-        (None, {'fields': ('email', 'phone_number',)}),
+        (None, {'fields': ('email', 'is_staff',)}),
     )
 
 
