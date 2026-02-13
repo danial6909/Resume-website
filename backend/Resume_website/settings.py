@@ -212,9 +212,10 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'json_style': {
-            'format': '[{asctime}] {levelname} | {message}',
+        'verbose': {
+            'format': '[{asctime}] {levelname} | {name} | {module}:{lineno} | {message}',
             'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
         },
     },
     'handlers': {
@@ -222,7 +223,8 @@ LOGGING = {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
             'filename': BASE_DIR / 'errors.log',
-            'formatter': 'json_style',
+            'formatter': 'verbose',
+            'encoding': 'utf-8', # ======== اضافه شده برای جلوگیری از خطای Unicode ========
         },
         'console': {
             'level': 'ERROR',
@@ -231,15 +233,12 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            # ========
-            # اضافه کردن console برای اینکه خروجی به stderr.log هم برود
             'handlers': ['file', 'console'],
-            # ========
             'level': 'ERROR',
-            'propagate': False,
+            'propagate': True,
         },
         'account': {
-            'handlers': ['file'],
+            'handlers': ['file', 'console'],
             'level': 'ERROR',
             'propagate': False,
         },

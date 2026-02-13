@@ -26,7 +26,7 @@ def generate_unique_verification_code():
             return code
 
 
-def send_verification_email(username, email, hashed_password):
+def send_verification_email(username=None, email=None, hashed_password=None):
     from .models import EmailVerification
     # Generate Code
     code = generate_unique_verification_code()
@@ -121,6 +121,8 @@ def translate_error_message(message):
 
     return message
 
+# account/utils.py
+
 def custom_exception_handler(exception, context):
     response = exception_handler(exception, context)
 
@@ -163,16 +165,22 @@ def custom_exception_handler(exception, context):
         response.data = custom_data
         return response
     else:
+        # ========
         exc_type, exc_value, exc_traceback = sys.exc_info()
-        error_type = "Server Error"
-        error_message = "یک خطای غیرمنتظره رخ داد."
+        error_type = exc_type.__name__ if exc_type else "Exception"
+        error_message = str(exception)
         technical_details = "Contact Admin"
-        f_name, l_num = None, None
+        f_name, l_num = "Unknown", 0  # مقدار دهی اولیه برای دیتابیس
 
-        if exc_type.__name__ == 'ValidationError':
-            raw_detail = getattr(exception, 'detail', None) or getattr(exception, 'message_dict', None) or str(
-                exception)
+        # استخراج دقیق فایل و خط برای ذخیره در مدل ServerErrorLog
+        if exc_traceback:
+            last_traceback = traceback.extract_tb(exc_traceback)[-1]
+            f_name = last_traceback.filename
+            l_num = last_traceback.lineno
+            technical_details = f"File: {f_name} | Line: {l_num}"
 
+        if exc_type and exc_type.__name__ == 'ValidationError':
+            raw_detail = getattr(exception, 'detail', None) or getattr(exception, 'message_dict', None) or str(exception)
             return Response({
                 "status": "error",
                 "status_code": 400,
@@ -181,17 +189,7 @@ def custom_exception_handler(exception, context):
                 "errors": raw_detail if isinstance(raw_detail, (dict, list)) else {"error": [raw_detail]}
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        if settings.DEBUG:
-            error_type = exc_type.__name__ if exc_type else "Exception"
-            error_message = str(exception)
-
-            if exc_traceback:
-                last_traceback = traceback.extract_tb(exc_traceback)[-1]
-                technical_details = f"File: {last_traceback.filename} | Line: {last_traceback.lineno}"
-
-            else:
-                technical_details = "Traceback not available"
-
+        # ثبت در دیتابیس (اصلاح نام فیلد از url_path به path مطابق مدل)
         try:
             from .models import ServerErrorLog
             ServerErrorLog.objects.create(
@@ -199,22 +197,26 @@ def custom_exception_handler(exception, context):
                 message=error_message,
                 file_name=f_name,
                 line_number=l_num,
-                url_path=context.get('request').path if 'request' in context else "Unknown"
+                path=context.get('request').path if 'request' in context else "Unknown"
             )
         except Exception:
             pass
 
+        # لاگ کردن - استفاده از exc_info=True برای داشتن جزییات کامل در فایل لاگ
         logger.error(
-            f"Type: {error_type} | Message: {error_message} | Path: {context.get('request').path if 'request' in context else 'N/A'}")
+            f"Type: Server Error | Path: {context.get('request').path if 'request' in context else 'N/A'}",
+            exc_info=True
+        )
+        # ========
 
         return Response({
             "status": "error",
             "status_code": 500,
             "message": "خطای سیستمی رخ داده است.",
-            "technical_details": technical_details,
+            "technical_details": technical_details if settings.DEBUG else "Contact Admin",
             "errors": {
-                "exception_type": [error_type],  # نوع خطا (مثل ZeroDivisionError)
-                "server": [error_message], # پیام واقعی خطا (مثل division by zero)
+                "exception_type": [error_type],
+                "server": [error_message],
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
