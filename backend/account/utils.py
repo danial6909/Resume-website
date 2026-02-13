@@ -1,18 +1,20 @@
 from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from rest_framework.views import exception_handler
 from rest_framework.response import Response
-from django.conf import settings
-from django.utils.translation import gettext_lazy as _
 import re
 import random
-from django.core.mail import send_mail
-from .models import EmailVerification
-from django.utils import timezone
+import traceback
+import sys
 
 
 def generate_unique_verification_code():
+    from .models import EmailVerification
     import string
     # we make a function to check the generated code doesn't exist in database.
     while True:
@@ -23,6 +25,7 @@ def generate_unique_verification_code():
 
 
 def send_verification_email(username, email, hashed_password):
+    from .models import EmailVerification
     # Generate Code
     code = generate_unique_verification_code()
 
@@ -145,13 +148,33 @@ def custom_exception_handler(exception, context):
 
         response.data = custom_data
         return response
+    else:
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        error_type = "Server Error"
+        error_message = "یک خطای غیرمنتظره رخ داد."
+        technical_details = "Contact Admin"
 
-    return Response({
-        "status": "error",
-        "status_code": 500,
-        "message": "یک خطای پیش‌بینی نشده در سرور رخ داد.",
-        "errors": {"server": ["Internal Server Error"]}
-    }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        if settings.DEBUG:
+            error_type = exc_type.__name__ if exc_type else "Exception"
+            error_message = str(exception)
+
+            if exc_traceback:
+                last_traceback = traceback.extract_tb(exc_traceback)[-1]
+                technical_details = f"File: {last_traceback.filename} | Line: {last_traceback.lineno}"
+
+            else:
+                technical_details = "Traceback not available"
+
+        return Response({
+            "status": "error",
+            "status_code": 500,
+            "message": "خطای سیستمی رخ داده است.",
+            "technical_details": technical_details,
+            "errors": {
+                "exception_type": [error_type],  # نوع خطا (مثل ZeroDivisionError)
+                "server": [error_message], # پیام واقعی خطا (مثل division by zero)
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 def get_tokens_for_user(user):

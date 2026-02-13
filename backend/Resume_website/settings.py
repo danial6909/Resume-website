@@ -170,12 +170,15 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'EXCEPTION_HANDLER': 'account.utils.custom_exception_handler'
 }
+try:
+    with open(os.environ.get('JWT_PRIVATE_KEY_PATH'), 'r') as f:
+        PRIVATE_KEY_CONTENT = f.read()
 
-with open(os.environ.get('JWT_PRIVATE_KEY_PATH'), 'r') as f:
-    PRIVATE_KEY_CONTENT = f.read()
-
-with open(os.environ.get('JWT_PUBLIC_KEY_PATH'), 'r') as f:
-    PUBLIC_KEY_CONTENT = f.read()
+    with open(os.environ.get('JWT_PUBLIC_KEY_PATH'), 'r') as f:
+        PUBLIC_KEY_CONTENT = f.read()
+except Exception as e:
+    PRIVATE_KEY_CONTENT = ""
+    PUBLIC_KEY_CONTENT = ""
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
