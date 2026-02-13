@@ -11,6 +11,8 @@ import re
 import random
 import traceback
 import sys
+import logging
+logger = logging.getLogger('account')
 
 
 def generate_unique_verification_code():
@@ -201,6 +203,9 @@ def custom_exception_handler(exception, context):
             )
         except Exception:
             pass
+
+        logger.error(
+            f"Type: {error_type} | Message: {error_message} | Path: {context.get('request').path if 'request' in context else 'N/A'}")
 
         return Response({
             "status": "error",

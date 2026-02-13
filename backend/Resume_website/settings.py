@@ -213,7 +213,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'json_style': {
-            'format': '[{asctime}] {levelname} | Module: {module} | Message: {message}',
+            'format': '[{asctime}] {levelname} | {message}',
             'style': '{',
         },
     },
@@ -226,15 +226,21 @@ LOGGING = {
         },
         'console': {
             'level': 'ERROR',
-            'class': 'logging.StreamHandler',
-            'formatter': 'json_style',
+            'class': 'logging.StreamHandler', # ارسال به خروجی سیستم برای پر شدن stderr.log
         },
     },
     'loggers': {
+        # لوگر اصلی جنگو را بفرست به کنسول (stderr.log) تا errors.log کثیف نشود
         'django': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        # فقط خطاهایی که خودت دستی لاگ می‌کنی به errors.log برود
+        'account': {
             'handlers': ['file'],
             'level': 'ERROR',
-            'propagate': True,
+            'propagate': False,
         },
     },
 }
