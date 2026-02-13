@@ -19,6 +19,7 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from django.contrib.auth import authenticate, get_user_model
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth import logout
 
 
 CustomUser = get_user_model()
@@ -225,6 +226,8 @@ class LogoutAPIView(APIView):
         description='خروج از حساب کاربری و پاکسازی کوکی‌های احراز هویت (Access & Refresh).'
     )
     def post(self, request):
+        logout(request)
+
         response = Response(
             {"message": "با موفقیت از حساب خود خارج شدید"},
             status=status.HTTP_200_OK
