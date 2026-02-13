@@ -52,8 +52,10 @@ def send_verification_email(username, email, hashed_password):
             fail_silently=False,
         )
     except Exception as e:
+        user_friendly_error = "ارسال ایمیل با خطا مواجه شد. ممکن است آدرس ایمیل وجود نداشته باشد یا سرور موقتاً در دسترس نباشد."
+
         raise ValidationError({
-            "email": [f"ارسال ایمیل با خطا مواجه شد. لطفا از صحت ایمیل مطمئن شوید یا بعدا تلاش کنید. جزئیات: {str(e)}"]
+            "email": [user_friendly_error]
         })
 
     return code
@@ -161,6 +163,18 @@ def custom_exception_handler(exception, context):
         error_message = "یک خطای غیرمنتظره رخ داد."
         technical_details = "Contact Admin"
         f_name, l_num = None, None
+
+        if exc_type.__name__ == 'ValidationError':
+            raw_detail = getattr(exception, 'detail', None) or getattr(exception, 'message_dict', None) or str(
+                exception)
+
+            return Response({
+                "status": "error",
+                "status_code": 400,
+                "message": "خطای اعتبار سنجی",
+                "technical_details": "Manual Validation Error",
+                "errors": raw_detail if isinstance(raw_detail, (dict, list)) else {"error": [raw_detail]}
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         if settings.DEBUG:
             error_type = exc_type.__name__ if exc_type else "Exception"
