@@ -29,7 +29,7 @@ export default function SignUpForm() {
   const { authActionLoading, registerUser, verifyEmail } = useAuth();
   const [isSuccess, setIsSuccess] = useState(false); // ۱. استیت موفقیت اضافه شد
   // استیت‌های مدیریت مرحله و اطلاعات کاربر
-  const [step, setStep] = useState(2);
+  const [step, setStep] = useState(1);
   const [userEmail, setUserEmail] = useState("");
   const [focusFields, setFocusFields] = useState({});
   const router = useRouter();
@@ -61,12 +61,16 @@ export default function SignUpForm() {
   // مرحله اول: ثبت‌نام اولیه
   const onSubmit = async (data) => {
     try {
-      await registerUser(
+      // ۱. خروجی تابع رو توی یک متغیر ذخیره کن
+      const result = await registerUser(
         data.username,
         data.email,
         data.password,
         data.confirmPassword,
       );
+
+      // ۲. حالا نتیجه رو لاگ بگیر تا دیتای ارسالی بک‌اِند رو ببینی
+      console.log("Response from Backend:", result);
       setUserEmail(data.email);
       setStep(2); // انتقال به مرحله تایید کد
     } catch (error) {
@@ -98,7 +102,7 @@ export default function SignUpForm() {
 
   const handleVerifyOTP = async (otp) => {
     try {
-      await verifyEmail(userEmail, otp);
+      await verifyEmail(otp);
       setIsSuccess(true); // ۲. اگر خطایی نبود، موفقیت رو فعال کن
 
       // ۳. ریدایرکت بعد از چند ثانیه برای اینکه کاربر پیام رو ببینه
