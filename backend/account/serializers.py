@@ -90,10 +90,10 @@ class EmailVerificationSerializer(serializers.Serializer):
         # If user want to Register
         if verification.username and verification.password:
 
-            user = CustomUser.objects.create_user(
+            user = CustomUser.objects.create(
                 username=verification.username,
                 email=verification.email,
-                password=verification.password
+                password=verification.password,
             )
 
         else:

@@ -226,17 +226,18 @@ LOGGING = {
         },
         'console': {
             'level': 'ERROR',
-            'class': 'logging.StreamHandler', # ارسال به خروجی سیستم برای پر شدن stderr.log
+            'class': 'logging.StreamHandler',
         },
     },
     'loggers': {
-        # لوگر اصلی جنگو را بفرست به کنسول (stderr.log) تا errors.log کثیف نشود
         'django': {
-            'handlers': ['console'],
+            # ========
+            # اضافه کردن console برای اینکه خروجی به stderr.log هم برود
+            'handlers': ['file', 'console'],
+            # ========
             'level': 'ERROR',
             'propagate': False,
         },
-        # فقط خطاهایی که خودت دستی لاگ می‌کنی به errors.log برود
         'account': {
             'handlers': ['file'],
             'level': 'ERROR',
