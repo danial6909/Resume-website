@@ -218,11 +218,17 @@ class LogoutAPIView(APIView):
 
     @extend_schema(
         request=None,
-        responses={200: OpenApiTypes.OBJECT},
-        description='logout details, and remove necessary cookies')
+        responses={200: inline_serializer(
+            name='LogoutResponse',
+            fields={'message': drf_serializers.CharField()}
+        )},
+        description='خروج از حساب کاربری و پاکسازی کوکی‌های احراز هویت (Access & Refresh).'
+    )
     def post(self, request):
-        response = Response({"message": "با موفقیت از حساب خود خارج شدید"}, status=status.HTTP_200_OK)
-
+        response = Response(
+            {"message": "با موفقیت از حساب خود خارج شدید"},
+            status=status.HTTP_200_OK
+        )
         return delete_auth_cookies(response)
 
 class UserProfileAPIView(RetrieveUpdateAPIView):

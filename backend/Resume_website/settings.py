@@ -195,6 +195,16 @@ SPECTACULAR_SETTINGS = {
     'VERSION' : '1.0.0',
     'SERVE_INCLUDE_SCHEMA' : False,
     'COMPONENT_SPLIT_REQUEST' : True,
+    'SECURITY': [{'CookieAuth': []}],
+        'APPEND_COMPONENTS': {
+            "securitySchemes": {
+                "CookieAuth": {
+                    "type": "apiKey",
+                    "in": "cookie",
+                    "name": "access_token"
+                }
+            }
+        },
 }
 
 # To get a logfile of errors happen in server
