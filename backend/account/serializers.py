@@ -105,9 +105,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['email', 'username', 'password', 'password2']
         extra_kwargs = {
-            'email': {
-                'extra_kwargs': {'example': 'user@gmail.com'}
-            },
             'username': {
                 'min_length': 3,
                 'max_length': 30,
