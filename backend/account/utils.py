@@ -44,8 +44,11 @@ def send_verification_email(username, email, hashed_password):
     )
 
     try:
+        # We check subject here either it is for login or register
+        subject = "کد تایید ورود" if username is None else "کد تایید ثبت‌نام"
+
         send_mail(
-            subject="کد تایید ثبت‌نام",
+            subject=subject,
             message=f"کد تایید شما: {code}",
             from_email=settings.EMAIL_HOST_USER,
             recipient_list=[email],

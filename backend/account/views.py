@@ -66,14 +66,14 @@ class VerifyEmailAPIView(APIView):
 
     @extend_schema(
         request=EmailVerificationSerializer,
-        responses={201: inline_serializer(
+        responses={200: inline_serializer(
             name='VerifyEmailResponse',
             fields={
                 'message': drf_serializers.CharField(),
                 'user': UserInfoSerializer(),
             }
         )},
-        description='این ای پی ای برای تایید ایمیل با کد ارسالی است. پس از تایید، کاربر به صورت خودکار ساخته و لاگین می‌شود.'
+        description='تایید کد ۶ رقمی. اگر کاربر جدید باشد ساخته می‌شود و اگر قدیمی باشد لاگین می‌شود.'
     )
     def post(self, request):
         serializer = EmailVerificationSerializer(
@@ -82,14 +82,23 @@ class VerifyEmailAPIView(APIView):
         )
         serializer.is_valid(raise_exception=True)
 
-        user = serializer.save() # since serializer did validate, activate user returns here
+        # Check if username already is in database or not
+        verification_obj = serializer.validated_data['verification_obj']
+        is_registration = verification_obj.username is not None
+
+        user = serializer.save()
+        user = CustomUser.objects.select_related('profile').get(id=user.id)
 
         tokens = get_tokens_for_user(user)
 
+        success_message = 'حساب کاربری شما با موفقیت فعال شد.' if is_registration else 'با موفقیت وارد شدید.'
+
         response = Response({
-            "message": 'حساب کاربری شما با موفقیت فعال شد.',
+            "message": success_message,
             "user": UserInfoSerializer(user, context={'request': request}).data,
-        }, status=status.HTTP_201_CREATED)
+        }, status=status.HTTP_200_OK if not is_registration else status.HTTP_201_CREATED)
+
+        response.delete_cookie('user_email_pending')
 
         return set_auth_cookies(response, tokens)
 
@@ -143,31 +152,32 @@ class LoginAPIView(APIView):
     @extend_schema(
         request=LoginSerializer,
         responses={200: inline_serializer(
-            name='LoginResponse',
-            fields={
-                'message': drf_serializers.CharField(),
-                'user': UserInfoSerializer(),
-            }
+            name='LoginStep1Response',
+            fields={'message': drf_serializers.CharField(), '2fa_required': drf_serializers.BooleanField()}
         )},
-        description='این ای پی ای برای لاگین کردن هست.'
+        description='مرحله اول لاگین: تایید مشخصات و ارسال کد 2FA'
     )
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = authenticate(
-            username=serializer.validated_data['username'],
-            password=serializer.validated_data['password']
-        )
-        user_with_profile = CustomUser.objects.select_related('profile').get(id=user.id)
-        tokens = get_tokens_for_user(user)
+        user = serializer.validated_data['user']
+
+        send_verification_email(email=user.email)
 
         response = Response({
-            "message": "ورود با موفقیت انجام شد",
-            "user": UserInfoSerializer(user_with_profile, context={'request':request}).data,
+            "message": "کد تایید دو مرحله‌ای به ایمیل شما ارسال شد.",
+            "2fa_required": True
         }, status=status.HTTP_200_OK)
 
-        return set_auth_cookies(response, tokens)
-
+        response.set_cookie(
+            'user_email_pending',
+            user.email,
+            max_age=600,
+            httponly=True,
+            samesite='None' if not settings.DEBUG else 'Lax',
+            secure=not settings.DEBUG,
+        )
+        return response
 
 class CookieTokenRefreshView(APIView):
     permission_classes = [AllowAny]

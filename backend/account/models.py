@@ -40,9 +40,9 @@ class Profile(models.Model):
 
 
 class EmailVerification(models.Model):
-    username = models.CharField(max_length=30)
+    username = models.CharField(max_length=30, null=True, blank=True)
     email = models.EmailField()
-    password = models.CharField(max_length=128)
+    password = models.CharField(max_length=128, null=True, blank=True)
     code = models.CharField(max_length=6, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
