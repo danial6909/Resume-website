@@ -49,3 +49,20 @@ class EmailVerification(models.Model):
     def is_expired(self):
         from django.utils import timezone
         return timezone.now() > self.created_at + timezone.timedelta(minutes=2)
+
+
+class ServerErrorLog(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    exception_type = models.CharField(max_length=255)
+    message = models.TextField()
+    file_name = models.CharField(max_length=500, null=True)
+    line_number = models.IntegerField(null=True)
+    url_path = models.CharField(max_length=255, null=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name = "Log خطای سرور"
+        verbose_name_plural = "Logهای خطای سرور"
+
+    def __str__(self):
+        return f"{self.exception_type} - {self.timestamp}"

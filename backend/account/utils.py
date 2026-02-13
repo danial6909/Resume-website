@@ -43,12 +43,18 @@ def send_verification_email(username, email, hashed_password):
         }
     )
 
-    subjects = 'کد تایید ثبت‌نام'
-    message = f'کد تایید شما: {code}\nاین کد تا ۲ دقیقه دیگر منقضی می‌شود.'
-    email_from = settings.EMAIL_HOST_USER
-    recipient_list = [email]
-
-    send_mail(subjects, message, email_from, recipient_list)
+    try:
+        send_mail(
+            subject="کد تایید ثبت‌نام",
+            message=f"کد تایید شما: {code}",
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        raise ValidationError({
+            "email": [f"ارسال ایمیل با خطا مواجه شد. لطفا از صحت ایمیل مطمئن شوید یا بعدا تلاش کنید. جزئیات: {str(e)}"]
+        })
 
     return code
 
@@ -128,6 +134,7 @@ def custom_exception_handler(exception, context):
             "status": "error",
             "status_code": response.status_code,
             "message": message,
+            "technical_details": "Handled by DRF",
             "errors": {}
         }
 
@@ -153,6 +160,7 @@ def custom_exception_handler(exception, context):
         error_type = "Server Error"
         error_message = "یک خطای غیرمنتظره رخ داد."
         technical_details = "Contact Admin"
+        f_name, l_num = None, None
 
         if settings.DEBUG:
             error_type = exc_type.__name__ if exc_type else "Exception"
@@ -164,6 +172,18 @@ def custom_exception_handler(exception, context):
 
             else:
                 technical_details = "Traceback not available"
+
+        try:
+            from .models import ServerErrorLog
+            ServerErrorLog.objects.create(
+                exception_type=error_type,
+                message=error_message,
+                file_name=f_name,
+                line_number=l_num,
+                url_path=context.get('request').path if 'request' in context else "Unknown"
+            )
+        except Exception:
+            pass
 
         return Response({
             "status": "error",
