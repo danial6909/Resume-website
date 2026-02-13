@@ -44,6 +44,7 @@ class UserInfoSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['username', 'image']
 
+    @extend_schema_field(serializers.URLField())
     def get_image(self, obj):
         request = self.context.get('request')
 
@@ -86,11 +87,19 @@ class EmailVerificationSerializer(serializers.Serializer):
     def save(self, **kwargs):
         verification = self.validated_data['verification_obj']
 
-        user = CustomUser.objects.create_user(
-            username=verification.username,
-            email=verification.email,
-            password=verification.password
-        )
+        # If user want to Register
+        if verification.username and verification.password:
+
+            user = CustomUser.objects.create(
+                username=verification.username,
+                email=verification.email,
+                password=verification.password,
+            )
+
+        else:
+
+            # If user want to Log in
+            user = CustomUser.objects.get(email=verification.email)
 
         # we clear temporary table created.
         verification.delete()
@@ -165,8 +174,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField(style={'input_type': 'password'})
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(style={'input_type': 'password'}, required=True)
 
     def validate_username(self, value):
         username = value.lower().strip()
@@ -184,6 +193,8 @@ class LoginSerializer(serializers.Serializer):
 
             if not user:
                 raise serializers.ValidationError({'password': ["رمز عبور وارد شده اشتباه است."]})
+
+            data['user'] = user
         return data
 
 

@@ -40,12 +40,29 @@ class Profile(models.Model):
 
 
 class EmailVerification(models.Model):
-    username = models.CharField(max_length=30)
+    username = models.CharField(max_length=30, null=True, blank=True)
     email = models.EmailField()
-    password = models.CharField(max_length=128)
+    password = models.CharField(max_length=128, null=True, blank=True)
     code = models.CharField(max_length=6, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def is_expired(self):
         from django.utils import timezone
         return timezone.now() > self.created_at + timezone.timedelta(minutes=2)
+
+
+class ServerErrorLog(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    exception_type = models.CharField(max_length=255)
+    message = models.TextField()
+    file_name = models.CharField(max_length=500, null=True)
+    line_number = models.IntegerField(null=True)
+    url_path = models.CharField(max_length=255, null=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name = "Log خطای سرور"
+        verbose_name_plural = "Logهای خطای سرور"
+
+    def __str__(self):
+        return f"{self.exception_type} - {self.timestamp}"

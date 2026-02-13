@@ -136,7 +136,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'StaticRoot')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 # these settings related to static must change when deploying
@@ -170,12 +170,15 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'EXCEPTION_HANDLER': 'account.utils.custom_exception_handler'
 }
+try:
+    with open(os.environ.get('JWT_PRIVATE_KEY_PATH'), 'r') as f:
+        PRIVATE_KEY_CONTENT = f.read()
 
-with open(os.environ.get('JWT_PRIVATE_KEY_PATH'), 'r') as f:
-    PRIVATE_KEY_CONTENT = f.read()
-
-with open(os.environ.get('JWT_PUBLIC_KEY_PATH'), 'r') as f:
-    PUBLIC_KEY_CONTENT = f.read()
+    with open(os.environ.get('JWT_PUBLIC_KEY_PATH'), 'r') as f:
+        PUBLIC_KEY_CONTENT = f.read()
+except Exception as e:
+    PRIVATE_KEY_CONTENT = ""
+    PUBLIC_KEY_CONTENT = ""
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
@@ -192,24 +195,52 @@ SPECTACULAR_SETTINGS = {
     'VERSION' : '1.0.0',
     'SERVE_INCLUDE_SCHEMA' : False,
     'COMPONENT_SPLIT_REQUEST' : True,
+    'SECURITY': [{'CookieAuth': []}],
+        'APPEND_COMPONENTS': {
+            "securitySchemes": {
+                "CookieAuth": {
+                    "type": "apiKey",
+                    "in": "cookie",
+                    "name": "access_token"
+                }
+            }
+        },
 }
 
 # To get a logfile of errors happen in server
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} | {name} | {module}:{lineno} | {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
     'handlers': {
         'file': {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
             'filename': BASE_DIR / 'errors.log',
+            'formatter': 'verbose',
+            'encoding': 'utf-8', # ======== اضافه شده برای جلوگیری از خطای Unicode ========
+        },
+        'console': {
+            'level': 'ERROR',
+            'class': 'logging.StreamHandler',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['file'],
+            'handlers': ['file', 'console'],
             'level': 'ERROR',
             'propagate': True,
+        },
+        'account': {
+            'handlers': ['file', 'console'],
+            'level': 'ERROR',
+            'propagate': False,
         },
     },
 }
