@@ -71,7 +71,7 @@ class EmailVerificationSerializer(serializers.Serializer):
         email = self.context['request'].COOKIES.get('user_email_pending')
 
         if not email:
-            raise serializers.ValidationError({"code": ["اطلاعات نشست شما منقضی شده است."]})
+            raise serializers.ValidationError({"code": ["اطلاعات فرم ثبت نام شما یافت نشد، لطفا دوباره ثبت نام کنید."]})
 
         verification = EmailVerification.objects.filter(email=email, code=code).first()
         if not verification:
