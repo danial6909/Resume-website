@@ -8,19 +8,23 @@ from rest_framework import status
 from rest_framework.views import exception_handler
 from rest_framework.response import Response
 import re
-import random
+import secrets
 import traceback
 import sys
 import logging
-logger = logging.getLogger('account')
 
+
+logger = logging.getLogger('account')
 
 def generate_unique_verification_code():
     from .models import EmailVerification
     import string
-    # we make a function to check the generated code doesn't exist in database.
+
+    alphabet = string.digits
+
+    # we make random code and a function to check the generated code doesn't exist in database.
     while True:
-        code = ''.join(random.choices(string.digits, k=6))
+        code = ''.join(secrets.choice(alphabet) for i in range(6))
 
         if not EmailVerification.objects.filter(code=code).exists():
             return code

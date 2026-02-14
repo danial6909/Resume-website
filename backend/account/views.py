@@ -57,7 +57,10 @@ class ResendVerificationEmailView(APIView):
 
         send_verification_email(verification.username, email, verification.password)
 
-        return Response({"message": "کد تایید جدید ارسال شد."}, status=status.HTTP_200_OK)
+        return Response({
+            "status": "success",
+            "message": "کد تایید جدید ارسال شد."
+        }, status=status.HTTP_200_OK)
 
 
 class VerifyEmailAPIView(APIView):
@@ -95,6 +98,7 @@ class VerifyEmailAPIView(APIView):
         success_message = 'حساب کاربری شما با موفقیت فعال شد.' if is_registration else 'با موفقیت وارد شدید.'
 
         response = Response({
+            "status": "success",
             "message": success_message,
             "user": UserInfoSerializer(user, context={'request': request}).data,
         }, status=status.HTTP_200_OK if not is_registration else status.HTTP_201_CREATED)
@@ -130,6 +134,7 @@ class RegisterAPIView(APIView):
         )
 
         response = Response({
+            "status": "success",
             'message': f"کاربر {data['username']} عزیز، کد تایید برای شما ارسال شد.",
         }, status=status.HTTP_200_OK)
 
@@ -166,6 +171,7 @@ class LoginAPIView(APIView):
         send_verification_email(email=user.email)
 
         response = Response({
+            "status": "success",
             "message": "کد تایید دو مرحله‌ای به ایمیل شما ارسال شد.",
             "2fa_required": True
         }, status=status.HTTP_200_OK)
@@ -237,10 +243,11 @@ class LogoutAPIView(APIView):
     def post(self, request):
         logout(request)
 
-        response = Response(
-            {"message": "با موفقیت از حساب خود خارج شدید"},
-            status=status.HTTP_200_OK
-        )
+        response = Response({
+            "status": "success",
+            "message": "با موفقیت از حساب خود خارج شدید"
+        },status=status.HTTP_200_OK)
+
         return delete_auth_cookies(response)
 
 class UserProfileAPIView(RetrieveUpdateAPIView):
@@ -268,7 +275,8 @@ class UserMeAPIView(APIView):
 
          serializer = UserInfoSerializer(user, context={'request': request})
          return Response({
-            "user": UserInfoSerializer(user, context={'request':request}).data,
+             "status": "success",
+             "user": UserInfoSerializer(user, context={'request':request}).data,
         }, status=status.HTTP_200_OK)
 
 
@@ -294,10 +302,10 @@ class PasswordChangeAPIView(GenericAPIView):
 
         serializer.save()
 
-        return Response(
-            {'message': 'پسورد با موفقیت تغییر پیدا کرد!'},
-            status=status.HTTP_200_OK
-        )
+        return Response({
+            "status": "success",
+            'message': 'پسورد با موفقیت تغییر پیدا کرد!'
+        },status=status.HTTP_200_OK)
 
 
 class PhoneNumberUpdateAPIView(RetrieveUpdateAPIView):
