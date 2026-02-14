@@ -259,8 +259,16 @@ def delete_auth_cookies(response):
     """
     حذف توکن‌ها از کوکی برای عملیات Logout
     """
-    response.delete_cookie('access_token', path='/')
-    response.delete_cookie('refresh_token', path='/')
+    cookie_keys = ['access_token', 'refresh_token', 'sessionid', 'csrftoken']
+
+    for key in cookie_keys:
+        response.delete_cookie(
+            key,
+            path='/',
+            domain=getattr(settings, 'SESSION_COOKIE_DOMAIN', None),
+            samesite=getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
+        )
+
     return response
 
 
