@@ -4,6 +4,26 @@ import { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../utils/axiosInstance";
 import { useRouter } from "next/navigation";
 
+// تابع کمکی برای استانداردسازی ارورهای سرور
+const parseServerError = (error) => {
+  const responseData = error.response?.data;
+
+  // اگر بک‌اِند ساختار errors داشت (مثل فیلد code یا email)
+  if (responseData?.errors) {
+    return { type: "field_errors", data: responseData.errors };
+  }
+
+  // اگر فقط یک پیام کلی داشت
+  if (responseData?.message || typeof responseData === "string") {
+    return {
+      type: "general_error",
+      message: responseData.message || responseData || "خطای غیرمنتظره سرور",
+    };
+  }
+
+  return { type: "general_error", message: "خطا در اتصال به شبکه" };
+};
+
 export function useAuthLogic() {
   const [loading, setLoading] = useState(true); // برای چک کردن اولیه وضعیت لاگین
   const [user, setUser] = useState(null);
@@ -27,27 +47,22 @@ export function useAuthLogic() {
     getMe();
   }, []);
 
-// در فایل useAuthLogic.js تابع لاگین رو اینطوری تغییر بده:
-const login = useCallback(
-  async (username, password) => {
+  // در فایل useAuthLogic.js تابع لاگین رو اینطوری تغییر بده:
+  const login = useCallback(async (username, password) => {
     setAuthActionLoading(true);
     try {
       const response = await axiosInstance.post("account/login/", {
         username,
         password,
       });
-      
-      // لاگ برای دیدن پاسخ بک‌اِند (مشابه رجیستر)
-      console.log("Login Response:", response.data);
-      
-      // اینجا router.push رو حذف کردیم تا کاربر اول کد ۶ رقمی رو بزنه
-      return response.data; 
+      return response.data;
+    } catch (error) {
+      console.log(error)
+      throw parseServerError(error);
     } finally {
       setAuthActionLoading(false);
     }
-  },
-  [] // دیگر به router نیاز ندارد چون ریدایرکت نمی‌کنیم
-);
+  }, []);
 
   // ۳. منطق ثبت‌نام (Register)
   const registerUser = useCallback(
@@ -60,77 +75,45 @@ const login = useCallback(
           password,
           password2,
         });
-        // اینجا دیگه روت رو عوض نمی‌کنیم، چون باید کد تایید بگیره
-        console.log(response)
-        return response.data; 
+        return response.data;
+      } catch (error) {
+        throw parseServerError(error);
       } finally {
         setAuthActionLoading(false);
       }
     },
-    []
+    [],
   );
 
   // ۴. مرحله دوم: تایید کد ۶ رقمی
-  const verifyEmail = useCallback(
-    async ( otp) => {
-      const code = otp; // چون الان فقط کد رو داریم، ایمیل رو نمی‌فرستیم. سرور باید از کوکی بخونه.
-      console.log(code)
-      setAuthActionLoading(true);
-      try {
-        const response = await axiosInstance.post("account/verify-email/", {
-          
-          code,
-        });
-        // بعد از تایید کد، کاربر لاگین می‌شود و اطلاعاتش برمی‌گردد
-        if (response.data?.user) setUser(response.data.user);
-        router.push("/");
-        // return response.data;
-        return ; // فقط برای تست کردن مرحله بعدی، چون هنوز سرور کد OTP رو برنمی‌گردونه
-      } finally {
-        setAuthActionLoading(false);
-      }
-    },
-    [router]
-  );
+  const verifyEmail = useCallback(async (code) => {
+    
+    setAuthActionLoading(true);
+    try {
+      const response = await axiosInstance.post("account/verify-email/", {
+        code,
+      });
+      if (response.data?.user) setUser(response.data.user);
+      return response.data;
+    } catch (error) {
+      console.log(error)
+
+      throw parseServerError(error);
+    } finally {
+      setAuthActionLoading(false);
+    }
+  }, []);
 
 
-//   const verifyEmail = useCallback(
-//   async (email, otp) => {
-//     setAuthActionLoading(true);
-//     try {
-//       // شبیه‌سازی تاخیر شبکه
-//       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-//       // چک کردن کد دستی (بجای سرور)
-//       if (otp === "123456") {
-//         console.log("تبریک! کد درست بود.");
-        
-//         const mockUser = { username: "Danial", email: email };
-//         setUser(mockUser);
-        
-//         // این یعنی همه چیز اوکیه و SignUpForm میره برای نمایش Success
-//         return { success: true }; 
-//       } else {
-//         // شبیه‌سازی ارور سرور وقتی کد غلطه
-//         throw {
-//           response: {
-//             data: "کد وارد شده صحیح نیست. لطفاً دوباره تلاش کنید."
-//           }
-//         };
-//       }
-//     } finally {
-//       setAuthActionLoading(false);
-//     }
-//   },
-//   [setUser] // وابستگی‌ها رو دقیق بزار که استاندارد باشه
-// );
-
-  // ۵. ارسال مجدد کد
   const resendOTP = useCallback(async (email) => {
+    setAuthActionLoading(true);
     try {
       await axiosInstance.post("account/resend-otp/", { email });
     } catch (error) {
-      console.error("خطا در ارسال مجدد کد", error);
+      throw parseServerError(error);
+    } finally {
+      setAuthActionLoading(false);
     }
   }, []);
 

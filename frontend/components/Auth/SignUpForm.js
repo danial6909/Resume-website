@@ -8,7 +8,7 @@ import ParticlesBackground from "../LoginBackground/ParticlesBackground";
 import { useAuth } from "@/context/AuthContext";
 import OTPInput from "./OTPInput";
 import { useRouter } from "next/navigation";
-
+import { applyServerErrors } from "@/utils/formHelpers";
 // ۱. تعریف قوانین اعتبارسنجی
 const signUpSchema = z
   .object({
@@ -29,7 +29,7 @@ export default function SignUpForm() {
   const { authActionLoading, registerUser, verifyEmail } = useAuth();
   const [isSuccess, setIsSuccess] = useState(false); // ۱. استیت موفقیت اضافه شد
   // استیت‌های مدیریت مرحله و اطلاعات کاربر
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(2);
   const [userEmail, setUserEmail] = useState("");
   const [focusFields, setFocusFields] = useState({});
   const router = useRouter();
@@ -58,61 +58,34 @@ export default function SignUpForm() {
   const handleBlur = (field) =>
     setFocusFields((prev) => ({ ...prev, [field]: false }));
 
-  // مرحله اول: ثبت‌نام اولیه
-  const onSubmit = async (data) => {
-    try {
-      // ۱. خروجی تابع رو توی یک متغیر ذخیره کن
-      const result = await registerUser(
-        data.username,
-        data.email,
-        data.password,
-        data.confirmPassword,
-      );
+// مرحله اول: ثبت‌نام
+const onSubmit = async (data) => {
+  try {
+    await registerUser(data.username, data.email, data.password, data.confirmPassword);
+    setUserEmail(data.email);
+    setStep(2);
+  } catch (error) {
+    // فقط در یک خط، تمام ارورها رو ست کن!
+    applyServerErrors(error, setError);
+  }
+};
 
-      // ۲. حالا نتیجه رو لاگ بگیر تا دیتای ارسالی بک‌اِند رو ببینی
-      console.log("Response from Backend:", result);
-      setUserEmail(data.email);
-      setStep(2); // انتقال به مرحله تایید کد
-    } catch (error) {
-      if (error.response?.data) {
-        const serverErrors = error.response.data.errors || error.response.data;
-
-        if (serverErrors && typeof serverErrors === "object") {
-          Object.keys(serverErrors).forEach((field) => {
-            const errorData = serverErrors[field];
-            const message = Array.isArray(errorData)
-              ? errorData.map((msg) => `• ${msg}`).join("\n")
-              : `• ${errorData}`;
-
-            setError(field, { type: "server", message });
-          });
-        } else {
-          setError("root", {
-            message:
-              typeof serverErrors === "string"
-                ? serverErrors
-                : "خطای غیرمنتظره سرور",
-          });
-        }
-      } else {
-        setError("root", { message: "خطا در اتصال به شبکه" });
-      }
+// مرحله دوم: تایید OTP
+const handleVerifyOTP = async (code) => {
+  try {
+    await verifyEmail(code);
+    setIsSuccess(true);
+    setTimeout(() => { router.push("/"); }, 3000);
+  } catch (error) {
+    // برای OTP هم از همون تابع استفاده کن (ارور رو روی فیلد otp یا code ست می‌کنه)
+    applyServerErrors(error, setError);
+    
+    // اگر فیلد ارور برنگشت و خواستی دستی ست کنی:
+    if (error.type === "general_error") {
+       setError("otp", { message: error.message });
     }
-  };
-
-  const handleVerifyOTP = async (otp) => {
-    try {
-      await verifyEmail(otp);
-      setIsSuccess(true); // ۲. اگر خطایی نبود، موفقیت رو فعال کن
-
-      // ۳. ریدایرکت بعد از چند ثانیه برای اینکه کاربر پیام رو ببینه
-      setTimeout(() => {
-        router.push("/");
-      }, 3000);
-    } catch (error) {
-      setError("otp", { message: "کد وارد شده صحیح نیست یا منقضی شده است" });
-    }
-  };
+  }
+};
 
   return (
     <div className={styles.container}>
@@ -251,7 +224,7 @@ export default function SignUpForm() {
                 email={userEmail}
                 onComplete={handleVerifyOTP}
                 onBack={() => setStep(1)}
-                serverError={errors.otp?.message}
+                serverError={errors.code?.message}
               />
             )}
 
