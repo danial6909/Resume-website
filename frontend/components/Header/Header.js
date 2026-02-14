@@ -27,13 +27,20 @@ export default function Header() {
   ];
 
   useEffect(() => {
-    setIsMenuOpen(false);
-  }, [pathname]);
+    // فقط اگر منو باز است، آن را ببند تا رندر اضافه اتفاق نیفتد
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+    }
+  }, [pathname]); // وابستگی باید روی تغییر آدرس باشد
 
   useEffect(() => {
     const handleScroll = () => {
       const threshold = 200;
-      setIsSticky(window.scrollY > threshold);
+      // فقط اگر وضعیت واقعا تغییر کرد استیت رو آپدیت کن
+      setIsSticky((prev) => {
+        const currentSticky = window.scrollY > threshold;
+        return prev === currentSticky ? prev : currentSticky;
+      });
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);

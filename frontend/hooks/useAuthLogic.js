@@ -25,27 +25,29 @@ export function useAuthLogic() {
 
   useEffect(() => {
     getMe();
-  }, [getMe]);
+  }, []);
 
-  // ۲. منطق ورود (Login)
-  const login = useCallback(
-    async (username, password) => {
-      setAuthActionLoading(true);
-      try {
-        const response = await axiosInstance.post("account/login/", {
-          username,
-          password,
-        });
-        setUser(response.data.user);
-
-        router.push("/");
-        return response.data;
-      } finally {
-        setAuthActionLoading(false);
-      }
-    },
-    [router],
-  );
+// در فایل useAuthLogic.js تابع لاگین رو اینطوری تغییر بده:
+const login = useCallback(
+  async (username, password) => {
+    setAuthActionLoading(true);
+    try {
+      const response = await axiosInstance.post("account/login/", {
+        username,
+        password,
+      });
+      
+      // لاگ برای دیدن پاسخ بک‌اِند (مشابه رجیستر)
+      console.log("Login Response:", response.data);
+      
+      // اینجا router.push رو حذف کردیم تا کاربر اول کد ۶ رقمی رو بزنه
+      return response.data; 
+    } finally {
+      setAuthActionLoading(false);
+    }
+  },
+  [] // دیگر به router نیاز ندارد چون ریدایرکت نمی‌کنیم
+);
 
   // ۳. منطق ثبت‌نام (Register)
   const registerUser = useCallback(
@@ -59,6 +61,7 @@ export function useAuthLogic() {
           password2,
         });
         // اینجا دیگه روت رو عوض نمی‌کنیم، چون باید کد تایید بگیره
+        console.log(response)
         return response.data; 
       } finally {
         setAuthActionLoading(false);
@@ -69,12 +72,14 @@ export function useAuthLogic() {
 
   // ۴. مرحله دوم: تایید کد ۶ رقمی
   const verifyEmail = useCallback(
-    async (email, otp) => {
+    async ( otp) => {
+      const code = otp; // چون الان فقط کد رو داریم، ایمیل رو نمی‌فرستیم. سرور باید از کوکی بخونه.
+      console.log(code)
       setAuthActionLoading(true);
       try {
-        const response = await axiosInstance.post("account/verify-otp/", {
-          email,
-          otp,
+        const response = await axiosInstance.post("account/verify-email/", {
+          
+          code,
         });
         // بعد از تایید کد، کاربر لاگین می‌شود و اطلاعاتش برمی‌گردد
         if (response.data?.user) setUser(response.data.user);
