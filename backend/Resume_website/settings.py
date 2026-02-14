@@ -2,6 +2,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,6 +23,14 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
 cors_string = os.environ.get('CORS_ORIGINS', '')
 CORS_ALLOWED_ORIGINS = cors_string.split(',')
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'accept-encoding',
+    'content-type',
+    'accept',
+    'origin',
+    'authorization',
+    'x-csrftoken',
+]
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -212,8 +221,9 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
-            'format': '[{asctime}] {levelname} | {name} | {module}:{lineno} | {message}',
+        'clean_log': {
+            # فقط زمان را چاپ می‌کند؛ بقیه جزییات را در پیام (message) به صورت سفارشی می‌فرستیم
+            'format': '[{asctime}] | {message}',
             'style': '{',
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
@@ -223,12 +233,13 @@ LOGGING = {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
             'filename': BASE_DIR / 'errors.log',
-            'formatter': 'verbose',
-            'encoding': 'utf-8', # ======== اضافه شده برای جلوگیری از خطای Unicode ========
+            'formatter': 'clean_log',
+            'encoding': 'utf-8',
         },
         'console': {
             'level': 'ERROR',
             'class': 'logging.StreamHandler',
+            'formatter': 'clean_log',
         },
     },
     'loggers': {

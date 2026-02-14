@@ -182,11 +182,19 @@ class LoginAPIView(APIView):
 
 class CookieTokenRefreshView(APIView):
     permission_classes = [AllowAny]
+    # Serializer here is just for showing schema in swagger otherwise we don't use it.
     serializer_class = TokenRefreshSerializer
 
     @extend_schema(
         tags=['Auth'],
-        responses={200: TokenRefreshSerializer},
+        request=None,
+        responses={200: inline_serializer(
+            name='TokenRefreshResponse',
+            fields={
+                'status': drf_serializers.CharField(),
+                'message': drf_serializers.CharField(),
+            }
+        )},
         auth=[]
     )
     def post(self, request):
@@ -197,6 +205,7 @@ class CookieTokenRefreshView(APIView):
 
         try:
             refresh = RefreshToken(refresh_token)
+
             tokens = {
                 'access': str(refresh.access_token),
                 'refresh': refresh_token

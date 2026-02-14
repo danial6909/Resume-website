@@ -124,6 +124,33 @@ def translate_error_message(message):
 # account/utils.py
 
 def custom_exception_handler(exception, context):
+
+    # These are base information that we collect from an error.
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    error_type = exc_type.__name__ if exc_type else "Exception"
+    error_message = str(exception)
+    f_name, l_num = "Unknown", 0
+    path = context.get('request').path if 'request' in context else "Unknown"
+
+    if exc_traceback:
+        extract = traceback.extract_tb(exc_traceback)
+        if extract:
+            last_traceback = extract[-1]
+            f_name = last_traceback.filename
+            l_num = last_traceback.lineno
+
+    try:
+        from .models import ServerErrorLog
+        ServerErrorLog.objects.create(
+            exception_type=error_type,
+            message=error_message,
+            file_name=f_name,
+            line_number=l_num,
+            url_path=path
+        )
+    except Exception:
+        pass
+
     response = exception_handler(exception, context)
 
     status_messages = {
@@ -132,24 +159,30 @@ def custom_exception_handler(exception, context):
         status.HTTP_403_FORBIDDEN: "شما اجازه دسترسی به این بخش را ندارید.",
         status.HTTP_404_NOT_FOUND: "منبع مورد نظر یافت نشد.",
         status.HTTP_405_METHOD_NOT_ALLOWED: "این متد برای این آدرس مجاز نیست.",
+        status.HTTP_429_TOO_MANY_REQUESTS: "تعداد درخواست‌های شما بیش از حد مجاز است. لطفا کمی صبر کنید.",
         status.HTTP_500_INTERNAL_SERVER_ERROR: "خطایی در سمت سرور رخ داده است.",
-        status.HTTP_429_TOO_MANY_REQUESTS: "تعداد درخواست‌های شما بیش از حد مجاز است. لطفا کمی صبر کنید."
     }
 
     if response is not None:
-        message = status_messages.get(response.status_code, "خطایی رخ داده است.")
+
+        message = status_messages.get(response.status_code, "خطایی در درخواست رخ داده است.")
 
         custom_data = {
             "status": "error",
             "status_code": response.status_code,
             "message": message,
-            "technical_details": "Handled by DRF",
+            "technical_details": f"File: {f_name} | Line: {l_num}" if settings.DEBUG else "عملیات با خطا مواجه شد.",
             "errors": {}
         }
 
+        # Every DRF Error Include 400 Errors Store In Log
         if response.status_code == 429:
             wait_time = getattr(exception, 'wait', 'چند')
             custom_data["errors"]["non_field_errors"] = [f"لطفاً {wait_time} ثانیه دیگر دوباره تلاش کنید."]
+
+            # ثبت لاگ تمیز در فایل
+            logger.error(f"DRF_429 | {error_type}: {error_message} | Path: {path}")
+
             response.data = custom_data
             return response
 
@@ -162,58 +195,21 @@ def custom_exception_handler(exception, context):
         elif isinstance(response.data, list):
             custom_data["errors"]["non_field_errors"] = [translate_error_message(err) for err in response.data]
 
+        logger.error(f"DRF_{response.status_code} | {error_type}: {error_message} | File: {f_name} | Line: {l_num}")
+
         response.data = custom_data
         return response
+
     else:
-        # ========
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        error_type = exc_type.__name__ if exc_type else "Exception"
-        error_message = str(exception)
-        technical_details = "Contact Admin"
-        f_name, l_num = "Unknown", 0  # مقدار دهی اولیه برای دیتابیس
 
-        # استخراج دقیق فایل و خط برای ذخیره در مدل ServerErrorLog
-        if exc_traceback:
-            last_traceback = traceback.extract_tb(exc_traceback)[-1]
-            f_name = last_traceback.filename
-            l_num = last_traceback.lineno
-            technical_details = f"File: {f_name} | Line: {l_num}"
-
-        if exc_type and exc_type.__name__ == 'ValidationError':
-            raw_detail = getattr(exception, 'detail', None) or getattr(exception, 'message_dict', None) or str(exception)
-            return Response({
-                "status": "error",
-                "status_code": 400,
-                "message": "خطای اعتبار سنجی",
-                "technical_details": "Manual Validation Error",
-                "errors": raw_detail if isinstance(raw_detail, (dict, list)) else {"error": [raw_detail]}
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        # ثبت در دیتابیس (اصلاح نام فیلد از url_path به path مطابق مدل)
-        try:
-            from .models import ServerErrorLog
-            ServerErrorLog.objects.create(
-                exception_type=error_type,
-                message=error_message,
-                file_name=f_name,
-                line_number=l_num,
-                path=context.get('request').path if 'request' in context else "Unknown"
-            )
-        except Exception:
-            pass
-
-        # لاگ کردن - استفاده از exc_info=True برای داشتن جزییات کامل در فایل لاگ
-        logger.error(
-            f"Type: Server Error | Path: {context.get('request').path if 'request' in context else 'N/A'}",
-            exc_info=True
-        )
-        # ========
+        # Every Internal Errors And Server Error Like 500 Errors Store In Log
+        logger.error(f"SERVER_500 | {error_type}: {error_message} | File: {f_name} | Line: {l_num}")
 
         return Response({
             "status": "error",
             "status_code": 500,
             "message": "خطای سیستمی رخ داده است.",
-            "technical_details": technical_details if settings.DEBUG else "Contact Admin",
+            "technical_details": f"File: {f_name} | Line: {l_num}" if settings.DEBUG else "با پشتیبانی تماس بگیرید.",
             "errors": {
                 "exception_type": [error_type],
                 "server": [error_message],
