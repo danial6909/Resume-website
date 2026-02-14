@@ -212,8 +212,9 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
-            'format': '[{asctime}] {levelname} | {name} | {module}:{lineno} | {message}',
+        'clean_log': {
+            # فقط زمان را چاپ می‌کند؛ بقیه جزییات را در پیام (message) به صورت سفارشی می‌فرستیم
+            'format': '[{asctime}] | {message}',
             'style': '{',
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
@@ -223,12 +224,13 @@ LOGGING = {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
             'filename': BASE_DIR / 'errors.log',
-            'formatter': 'verbose',
-            'encoding': 'utf-8', # ======== اضافه شده برای جلوگیری از خطای Unicode ========
+            'formatter': 'clean_log',
+            'encoding': 'utf-8',
         },
         'console': {
             'level': 'ERROR',
             'class': 'logging.StreamHandler',
+            'formatter': 'clean_log',
         },
     },
     'loggers': {
