@@ -17,7 +17,7 @@
 //     .max(20, "نام کاربری خیلی طولانی است"),
 //   password: z
 //     .string()
-//     .min(8, "رمز عبور باید حداقل 8 کاراکتر باشد") 
+//     .min(8, "رمز عبور باید حداقل 8 کاراکتر باشد")
 //     .max(128, "رمز عبور باید حداکثر 128 کاراکترباشد"),
 // });
 
@@ -163,8 +163,7 @@
 //           )}
 
 //           <div className={styles.formRow}>
-           
-            
+
 //             <a href="/forgetPassword" className={styles.forgot}>
 //               فراموشی رمز عبور
 //             </a>
@@ -187,14 +186,6 @@
 //   );
 // }
 
-
-
-
-
-
-
-
-
 "use client";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -207,7 +198,7 @@ import ParticlesBackground from "../LoginBackground/ParticlesBackground";
 import { useAuth } from "@/context/AuthContext";
 import OTPInput from "./OTPInput";
 import { useRouter } from "next/navigation";
-
+import { applyServerErrors } from "@/utils/formHelpers";
 // ۱. تنظیم قوانین اعتبار سنجی
 const loginSchema = z.object({
   username: z
@@ -216,7 +207,7 @@ const loginSchema = z.object({
     .max(20, "نام کاربری خیلی طولانی است"),
   password: z
     .string()
-    .min(8, "رمز عبور باید حداقل 8 کاراکتر باشد") 
+    .min(8, "رمز عبور باید حداقل 8 کاراکتر باشد")
     .max(128, "رمز عبور باید حداکثر 128 کاراکترباشد"),
 });
 
@@ -249,59 +240,37 @@ export default function LoginForm() {
   const handleBlur = (field) =>
     setFocusFields((prev) => ({ ...prev, [field]: false }));
 
+  // متد ورود
   const onSubmit = async (data) => {
     try {
       // ۱. خروجی تابع رو توی یک متغیر ذخیره کن
+
       const result = await login(data.username, data.password);
-      
+
       // ۲. حالا نتیجه رو لاگ بگیر تا دیتای ارسالی بک‌اِند رو ببینی
+
       console.log("Response from Backend:", result);
-      
+
       // فرض می‌کنیم بک‌اند ایمیل رو برمی‌گردونه یا از کانتکست می‌گیریم
-      setUserEmail(result?.email || data.username); 
+
+      setUserEmail(result?.email || data.username);
+
       setStep(2); // انتقال به مرحله تایید کد
     } catch (error) {
-      if (error.response && error.response.data) {
-        // استخراج خطاها (معمولاً در فیلد errors یا مستقیماً در data هستند)
-        const serverErrors = error.response.data.errors || error.response.data;
-        console.log(serverErrors);
-
-        if (typeof serverErrors === "object") {
-          Object.keys(serverErrors).forEach((field) => {
-            const errorData = serverErrors[field];
-            let message = "";
-
-            // تبدیل خطاها به فرمت لیست نقطه‌دار (مشابه فایل رجیستر)
-            if (Array.isArray(errorData)) {
-              message = errorData.map((msg) => `• ${msg}`).join("\n");
-            } else {
-              message = `• ${errorData}`;
-            }
-
-            // تنظیم خطا روی فیلد مربوطه یا روی root اگر فیلد نامشخص بود
-            setError(field, {
-              type: "server",
-              message: message,
-            });
-          });
-        }
-      } else {
-        setError("root", { message: "خطا در اتصال به شبکه" });
-      }
+      // دلیل تغییر: استفاده از تابع استاندارد برای نمایش ارورها با نقطه
+      applyServerErrors(error, setError);
     }
   };
 
-  const handleVerifyOTP = async (otp) => {
+  // متد تایید کد (اگر لاگین مرحله دوم داشت)
+  const handleVerifyOTP = async (code) => {
     try {
-      await verifyEmail(otp);
+      await verifyEmail(code);
       setIsSuccess(true);
-
-      // ریدایرکت بعد از چند ثانیه برای اینکه کاربر پیام رو ببینه
-      setTimeout(() => {
-        router.push("/");
-      }, 3000);
+      setTimeout(() => router.push("/"), 2000);
     } catch (error) {
-      setError("otp", { message: "کد وارد شده صحیح نیست یا منقضی شده است" });
+      // استفاده از نام فیلد 'code' برای مچ شدن با بک‌اِند و کامپوننت OTP
+      applyServerErrors(error, setError);
     }
   };
 
@@ -327,7 +296,7 @@ export default function LoginForm() {
               <ArrowRight size={18} />
               <span>بازگشت به سایت</span>
             </Link>
-            
+
             <h1 className={styles.formTitle}>
               {step === 1 ? "خوش آمدید" : "تایید ایمیل"}
             </h1>
@@ -343,7 +312,9 @@ export default function LoginForm() {
                 <div className={styles.formGroup}>
                   <label
                     className={`${styles.formLabel} ${
-                      focusFields.username || values.username ? styles.floating : ""
+                      focusFields.username || values.username
+                        ? styles.floating
+                        : ""
                     }`}
                   >
                     نام کاربری
@@ -368,7 +339,9 @@ export default function LoginForm() {
                 <div className={styles.formGroup}>
                   <label
                     className={`${styles.formLabel} ${
-                      focusFields.password || values.password ? styles.floating : ""
+                      focusFields.password || values.password
+                        ? styles.floating
+                        : ""
                     }`}
                   >
                     رمز عبور
@@ -422,7 +395,7 @@ export default function LoginForm() {
                 email={userEmail}
                 onComplete={handleVerifyOTP}
                 onBack={() => setStep(1)}
-                serverError={errors.otp?.message}
+                serverError={errors.code?.message}
               />
             )}
 

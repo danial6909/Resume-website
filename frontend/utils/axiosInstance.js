@@ -67,15 +67,15 @@ axiosInstance.interceptors.response.use(
         // ۱. حتما توکن‌های خراب رو از استیت یا کوکی پاک کن
         // اگر پاک نکنی، درخواست بعدی دوباره فکر می‌کنه توکن داره و ۴۰۱ می‌گیره
 
-        if (typeof window !== "undefined") {
-          // ۲. به جای استفاده از window.location که کل صفحه رو لود می‌کنه
-          // از router.push خودِ Next.js استفاده کن (اگر داخل کامپوننت هستی)
-          // یا فقط زمانی هدایت کن که در صفحه لاگین نیستی!
+        // if (typeof window !== "undefined") {
+        //   // ۲. به جای استفاده از window.location که کل صفحه رو لود می‌کنه
+        //   // از router.push خودِ Next.js استفاده کن (اگر داخل کامپوننت هستی)
+        //   // یا فقط زمانی هدایت کن که در صفحه لاگین نیستی!
 
-          // if (window.location.pathname !== "/login") {
-          //   window.location.href = "/login";
-          // }
-        }
+        //   if (window.location.pathname !== "/login") {
+        //     window.location.href = "/login";
+        //   }
+        // }
         return Promise.reject(refreshError);
       }
     }
