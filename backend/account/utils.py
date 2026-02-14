@@ -171,7 +171,7 @@ def custom_exception_handler(exception, context):
             "status": "error",
             "status_code": response.status_code,
             "message": message,
-            "technical_details": f"File: {f_name} | Line: {l_num}",
+            "technical_details": f"File: {f_name} | Line: {l_num}" if settings.DEBUG else "عملیات با خطا مواجه شد.",
             "errors": {}
         }
 
