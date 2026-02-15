@@ -1,3 +1,5 @@
+from django.core import signing
+
 from .serializers import UserRegisterSerializer, ProfileSerializer, UserCredentialsUpdateSerializer, \
     PasswordChangeSerializer, PhoneNumberUpdateSerializer, LoginSerializer, UserInfoSerializer, \
     EmailVerificationSerializer
@@ -233,7 +235,13 @@ class CookieTokenRefreshView(APIView):
         auth=[]
     )
     def post(self, request):
-        refresh_token = request.COOKIES.get('refresh_token')
+        try:
+            refresh_token = request.get_signed_cookie(
+                'refresh_token',
+                salt='auth_token_salt'
+            )
+        except (signing.BadSignature, KeyError):
+            refresh_token = None
 
         if not refresh_token:
             raise ValidationError({"refresh_token": ["توکن refresh گم شده است!"]})

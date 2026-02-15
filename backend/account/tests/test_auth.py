@@ -123,6 +123,12 @@ class AuthenticationTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['status'], 'success')
 
+        # Check if sessionid cookie is deleted or not
+        for cookie_name in ['access_token', 'refresh_token', 'sessionid']:
+            cookie = response.cookies.get(cookie_name)
+            if cookie:
+                self.assertEqual(cookie.value, "")
+
         # ۴. بررسی فیزیکی پاک شدن کوکی‌ها در پاسخ سرور
         # در جنگو، وقتی کوکی حذف می‌شود، مقدار آن در پاسخ به "" (رشته خالی) تبدیل می‌شود
         self.assertEqual(response.cookies.get('access_token').value, "")

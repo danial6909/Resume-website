@@ -240,15 +240,17 @@ def set_auth_cookies(response, tokens):
     access_lifetime = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds()
     refresh_lifetime = settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds()
 
-    response.set_cookie(
+    response.set_signed_cookie(
         key='access_token',
         value=tokens['access'],
+        salt='auth_token_salt',
         max_age=int(access_lifetime),
         **COOKIE_SETTINGS
     )
-    response.set_cookie(
+    response.set_signed_cookie(
         key='refresh_token',
         value=tokens['refresh'],
+        salt='auth_token_salt',
         max_age=int(refresh_lifetime),
         **COOKIE_SETTINGS
     )
@@ -259,14 +261,13 @@ def delete_auth_cookies(response):
     """
     حذف توکن‌ها از کوکی برای عملیات Logout
     """
-    cookie_keys = ['access_token', 'refresh_token', 'sessionid', 'csrftoken']
+    cookie_keys = ['access_token', 'refresh_token', 'sessionid', 'csrftoken', 'user_email_pending']
 
     for key in cookie_keys:
         response.delete_cookie(
             key,
-            path='/',
-            domain=getattr(settings, 'SESSION_COOKIE_DOMAIN', None),
-            samesite=getattr(settings, 'SESSION_COOKIE_SAMESITE')
+            path=COOKIE_SETTINGS['path'],
+            samesite=COOKIE_SETTINGS['samesite']
         )
 
     return response
