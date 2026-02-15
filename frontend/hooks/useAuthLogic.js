@@ -36,7 +36,9 @@ export function useAuthLogic() {
     try {
       const response = await axiosInstance.get("account/me/");
       setUser(response.data.user);
+      console.log(response)
     } catch (error) {
+      console.log(error)
       setUser(null);
     } finally {
       setLoading(false);
@@ -76,7 +78,9 @@ export function useAuthLogic() {
           password2,
         });
         return response.data;
+        console.log(response)
       } catch (error) {
+        console.log(error)
         throw parseServerError(error);
       } finally {
         setAuthActionLoading(false);
@@ -121,7 +125,9 @@ export function useAuthLogic() {
   const logout = useCallback(async () => {
     setAuthActionLoading(true);
     try {
-      await axiosInstance.post("account/logout/");
+      const response = await axiosInstance.post("account/logout/");
+      console.log(response)
+      // console.log(response)
     } finally {
       setUser(null);
       setAuthActionLoading(false);

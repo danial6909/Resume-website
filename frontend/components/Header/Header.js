@@ -17,7 +17,6 @@ export default function Header() {
   const pathname = usePathname();
   const isHomePage = pathname === "/";
   console.log(user);
-  console.log(user?.image); // استفاده از Optional Chaining
   const menuItems = [
     { title: "خانه", link: "/" },
     { title: "رزومه", link: "/resume" },
