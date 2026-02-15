@@ -266,7 +266,7 @@ def delete_auth_cookies(response):
             key,
             path='/',
             domain=getattr(settings, 'SESSION_COOKIE_DOMAIN', None),
-            samesite=getattr(settings, 'SESSION_COOKIE_SAMESITE', 'Lax')
+            samesite=getattr(settings, 'SESSION_COOKIE_SAMESITE')
         )
 
     return response
