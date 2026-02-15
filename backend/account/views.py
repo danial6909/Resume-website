@@ -1,9 +1,11 @@
+from django.core import signing
+
 from .serializers import UserRegisterSerializer, ProfileSerializer, UserCredentialsUpdateSerializer, \
     PasswordChangeSerializer, PhoneNumberUpdateSerializer, LoginSerializer, UserInfoSerializer, \
     EmailVerificationSerializer
 from .utils import get_tokens_for_user, set_auth_cookies, delete_auth_cookies, send_verification_email
 from .models import Profile, EmailVerification
-from drf_spectacular.types import OpenApiTypes
+from .permissions import IsNotAuthenticated
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers as drf_serializers
 from rest_framework import status
@@ -25,13 +27,17 @@ from django.contrib.auth import logout
 CustomUser = get_user_model()
 
 class ResendVerificationEmailView(APIView):
-    permission_classes = (AllowAny,)
+    permission_classes = [IsNotAuthenticated]
     throttle_classes = (ScopedRateThrottle,)
     throttle_scope = 'auth_limit'
     serializer_class = None
 
     def post(self, request, *args, **kwargs):
-        email = request.COOKIES.get('user_email_pending')
+        email = request.get_signed_cookie(
+            'user_email_pending',
+            salt='account_verification_salt',
+            default=None
+        )
 
         if not email:
             return Response(
@@ -57,11 +63,14 @@ class ResendVerificationEmailView(APIView):
 
         send_verification_email(verification.username, email, verification.password)
 
-        return Response({"message": "کد تایید جدید ارسال شد."}, status=status.HTTP_200_OK)
+        return Response({
+            "status": "success",
+            "message": "کد تایید جدید ارسال شد."
+        }, status=status.HTTP_200_OK)
 
 
 class VerifyEmailAPIView(APIView):
-    permission_classes = (AllowAny,)
+    permission_classes = [IsNotAuthenticated]
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = 'auth_limit'
 
@@ -95,6 +104,7 @@ class VerifyEmailAPIView(APIView):
         success_message = 'حساب کاربری شما با موفقیت فعال شد.' if is_registration else 'با موفقیت وارد شدید.'
 
         response = Response({
+            "status": "success",
             "message": success_message,
             "user": UserInfoSerializer(user, context={'request': request}).data,
         }, status=status.HTTP_200_OK if not is_registration else status.HTTP_201_CREATED)
@@ -104,7 +114,7 @@ class VerifyEmailAPIView(APIView):
         return set_auth_cookies(response, tokens)
 
 class RegisterAPIView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsNotAuthenticated]
 
     @extend_schema(
         request=UserRegisterSerializer,
@@ -130,12 +140,14 @@ class RegisterAPIView(APIView):
         )
 
         response = Response({
+            "status": "success",
             'message': f"کاربر {data['username']} عزیز، کد تایید برای شما ارسال شد.",
         }, status=status.HTTP_200_OK)
 
-        response.set_cookie(
+        response.set_signed_cookie(
             'user_email_pending',
             data['email'],
+            salt='account_verification_salt',
             max_age = 600,
             httponly = True,
             samesite = 'None' if not settings.DEBUG else 'Lax',
@@ -146,7 +158,7 @@ class RegisterAPIView(APIView):
 
 
 class LoginAPIView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsNotAuthenticated]
     throttle_classes = [ScopedRateThrottle] # we use this class for special throttling
     throttle_scope = 'auth_limit' # the throttle we want to be set we mention it
 
@@ -166,19 +178,44 @@ class LoginAPIView(APIView):
         send_verification_email(email=user.email)
 
         response = Response({
+            "status": "success",
             "message": "کد تایید دو مرحله‌ای به ایمیل شما ارسال شد.",
             "2fa_required": True
         }, status=status.HTTP_200_OK)
 
-        response.set_cookie(
+        response.set_signed_cookie(
             'user_email_pending',
             user.email,
+            salt='account_verification_salt',
             max_age=600,
             httponly=True,
             samesite='None' if not settings.DEBUG else 'Lax',
             secure=not settings.DEBUG,
         )
         return response
+
+
+class LogoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        request=None,
+        responses={200: inline_serializer(
+            name='LogoutResponse',
+            fields={'message': drf_serializers.CharField()}
+        )},
+        description='خروج از حساب کاربری و پاکسازی کوکی‌های احراز هویت (Access & Refresh).'
+    )
+    def post(self, request):
+        logout(request)
+
+        response = Response({
+            "status": "success",
+            "message": "با موفقیت از حساب خود خارج شدید"
+        },status=status.HTTP_200_OK)
+
+        return delete_auth_cookies(response)
+
 
 class CookieTokenRefreshView(APIView):
     permission_classes = [AllowAny]
@@ -198,7 +235,13 @@ class CookieTokenRefreshView(APIView):
         auth=[]
     )
     def post(self, request):
-        refresh_token = request.COOKIES.get('refresh_token')
+        try:
+            refresh_token = request.get_signed_cookie(
+                'refresh_token',
+                salt='auth_token_salt'
+            )
+        except (signing.BadSignature, KeyError):
+            refresh_token = None
 
         if not refresh_token:
             raise ValidationError({"refresh_token": ["توکن refresh گم شده است!"]})
@@ -222,26 +265,6 @@ class CookieTokenRefreshView(APIView):
 
             raise ValidationError({"refresh_token": ["توکن نامعتبر یا منقضی شده است."]})
 
-
-class LogoutAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(
-        request=None,
-        responses={200: inline_serializer(
-            name='LogoutResponse',
-            fields={'message': drf_serializers.CharField()}
-        )},
-        description='خروج از حساب کاربری و پاکسازی کوکی‌های احراز هویت (Access & Refresh).'
-    )
-    def post(self, request):
-        logout(request)
-
-        response = Response(
-            {"message": "با موفقیت از حساب خود خارج شدید"},
-            status=status.HTTP_200_OK
-        )
-        return delete_auth_cookies(response)
 
 class UserProfileAPIView(RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
@@ -268,7 +291,8 @@ class UserMeAPIView(APIView):
 
          serializer = UserInfoSerializer(user, context={'request': request})
          return Response({
-            "user": UserInfoSerializer(user, context={'request':request}).data,
+             "status": "success",
+             "user": UserInfoSerializer(user, context={'request':request}).data,
         }, status=status.HTTP_200_OK)
 
 
@@ -294,10 +318,10 @@ class PasswordChangeAPIView(GenericAPIView):
 
         serializer.save()
 
-        return Response(
-            {'message': 'پسورد با موفقیت تغییر پیدا کرد!'},
-            status=status.HTTP_200_OK
-        )
+        return Response({
+            "status": "success",
+            'message': 'پسورد با موفقیت تغییر پیدا کرد!'
+        },status=status.HTTP_200_OK)
 
 
 class PhoneNumberUpdateAPIView(RetrieveUpdateAPIView):

@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
+from django.core import signing
 from django.core.validators import validate_email
 from rest_framework import serializers
 from .models import Profile, EmailVerification
@@ -68,7 +69,14 @@ class EmailVerificationSerializer(serializers.Serializer):
 
     def validate(self, data):
         code = data.get('code')
-        email = self.context['request'].COOKIES.get('user_email_pending')
+        try:
+            email = self.context.get('request').get_signed_cookie(
+                'user_email_pending',
+                salt='account_verification_salt',
+                default=None
+            )
+        except signing.BadSignature:
+            email = None
 
         if not email:
             raise serializers.ValidationError({"code": ["اطلاعات فرم ثبت نام شما یافت نشد، لطفا دوباره ثبت نام کنید."]})

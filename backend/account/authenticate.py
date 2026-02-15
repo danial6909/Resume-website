@@ -1,9 +1,17 @@
+from django.core import signing
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 class CustomJWTCookieAuthentication(JWTAuthentication):
     def authenticate(self, request):
-        rw_token = request.COOKIES.get('access_token') or None
+        try:
+            rw_token = request.get_signed_cookie(
+                'access_token',
+                salt='auth_token_salt'
+            )
+        except (signing.BadSignature, KeyError):
+            # if signature is different or cookie is not valid
+            rw_token = None
 
         if rw_token is None:
             return None
