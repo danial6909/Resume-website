@@ -34,6 +34,7 @@ export default function SignUpForm() {
   const [focusFields, setFocusFields] = useState({});
   const router = useRouter();
 
+  
   const {
     register,
     handleSubmit,
