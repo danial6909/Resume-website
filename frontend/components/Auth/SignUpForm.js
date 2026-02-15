@@ -29,7 +29,7 @@ export default function SignUpForm() {
   const { authActionLoading, registerUser, verifyEmail } = useAuth();
   const [isSuccess, setIsSuccess] = useState(false); // ۱. استیت موفقیت اضافه شد
   // استیت‌های مدیریت مرحله و اطلاعات کاربر
-  const [step, setStep] = useState(2);
+  const [step, setStep] = useState(1);
   const [userEmail, setUserEmail] = useState("");
   const [focusFields, setFocusFields] = useState({});
   const router = useRouter();
