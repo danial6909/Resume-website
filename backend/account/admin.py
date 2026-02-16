@@ -1,10 +1,23 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import CustomUser
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
+
+
+
+# Create a Form to add user in Admin Panel
+class CustomUserCreationForm(UserCreationForm):
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'phone_number']
+
 
 # Register your models here.
 @admin.register(CustomUser)
-class CustomUserAdmin(UserAdmin):
+class CustomUserAdmin(BaseUserAdmin):
+    add_form = CustomUserCreationForm
+
     list_display = ['username', 'email', 'phone_number', 'is_staff', 'is_active']
     search_fields = ['username', 'email', 'phone_number']
     list_filter = ['is_staff', 'is_active', 'is_superuser']
