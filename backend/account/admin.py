@@ -38,6 +38,6 @@ class CustomUserAdmin(BaseUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'email', 'phone_number', 'password'),
+            'fields': ('username', 'email', 'phone_number', 'password1', 'password2'),
         }),
     )
