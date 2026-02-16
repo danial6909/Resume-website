@@ -8,6 +8,12 @@ from django.contrib.auth.forms import UserCreationForm
 
 # Create a Form to add user in Admin Panel
 class CustomUserCreationForm(UserCreationForm):
+    phone_number = forms.CharField(
+        label='Phone Number',
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': '0912...'})
+    )
+
     class Meta:
         model = CustomUser
         fields = ['username', 'email', 'phone_number']
