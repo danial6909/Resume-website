@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import CustomUser
+from .models import CustomUser, HeroSlider
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 
@@ -41,3 +41,10 @@ class CustomUserAdmin(BaseUserAdmin):
             'fields': ('username', 'email', 'phone_number', 'password1', 'password2'),
         }),
     )
+
+
+@admin.register(HeroSlider)
+class HeroSliderAdmin(admin.ModelAdmin):
+    list_display = ['title', 'order', 'is_active']
+    list_editable = ['order', 'is_active']
+    search_fields = ['title', 'description']

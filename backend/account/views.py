@@ -1,16 +1,15 @@
-from django.core import signing
-
 from .serializers import UserRegisterSerializer, ProfileSerializer, UserCredentialsUpdateSerializer, \
     PasswordChangeSerializer, PhoneNumberUpdateSerializer, LoginSerializer, UserInfoSerializer, \
-    EmailVerificationSerializer
+    EmailVerificationSerializer, HeroSliderSerializer
+
 from .utils import get_tokens_for_user, set_auth_cookies, delete_auth_cookies, send_verification_email
-from .models import Profile, EmailVerification
+from .models import Profile, EmailVerification, HeroSlider
 from .permissions import IsNotAuthenticated
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers as drf_serializers
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
-from rest_framework.generics import RetrieveUpdateAPIView, GenericAPIView
+from rest_framework.generics import RetrieveUpdateAPIView, GenericAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
@@ -18,7 +17,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import get_user_model
+from django.core import signing
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth import logout
@@ -334,3 +334,9 @@ class PhoneNumberUpdateAPIView(RetrieveUpdateAPIView):
     def get_serializer_context(self):
         return {'request': self.request}
 
+
+# ============  Page Details  ============
+class HeroSliderListView(ListAPIView):
+    queryset = HeroSlider.objects.filter(is_active=True)
+    serializer_class = HeroSliderSerializer
+    permission_classes = [AllowAny]

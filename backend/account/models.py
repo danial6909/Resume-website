@@ -66,3 +66,17 @@ class ServerErrorLog(models.Model):
 
     def __str__(self):
         return f"{self.exception_type} - {self.timestamp}"
+
+
+class HeroSlider(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    image = models.ImageField(upload_to='hero_sliders/')
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return self.title

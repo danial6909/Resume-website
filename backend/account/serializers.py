@@ -1,12 +1,11 @@
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core import signing
-from django.core.validators import validate_email
 from rest_framework import serializers
-from .models import Profile, EmailVerification
+from .models import Profile, EmailVerification, HeroSlider
 from django.templatetags.static import static
 from django.core.exceptions import ValidationError as DjangoValidationError
-from drf_spectacular.utils import extend_schema_field, inline_serializer
+from drf_spectacular.utils import extend_schema_field
 from django.contrib.auth.hashers import make_password
 
 
@@ -309,3 +308,19 @@ class PhoneNumberUpdateSerializer(serializers.Serializer):
         instance.phone_number = validated_data['phone_number']
         instance.save()
         return instance
+
+
+# ============  Page Details  ============
+class HeroSliderSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = HeroSlider
+        fields = ['id', 'title', 'description', 'image']
+
+    def get_image(self, obj):
+        if obj.image:
+            if 'request' in self.context:
+                return self.context['request'].build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
