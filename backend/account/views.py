@@ -347,4 +347,3 @@ class ServiceViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ServiceSerializer
     permission_classes = [AllowAny]
     lookup_field = 'slug'
-    lookup_value_regex = '[^/]+'
