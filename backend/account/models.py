@@ -1,6 +1,7 @@
+from .managers import CustomUserManager
 from django.conf import settings
 from django.utils import timezone
-from .managers import CustomUserManager
+from django.utils.text import slugify
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
@@ -80,3 +81,27 @@ class HeroSlider(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Service(models.Model):
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=255, unique=True, allow_unicode=True)
+    description = models.CharField(max_length=500)
+    full_description = models.TextField()
+    icon_type = models.CharField(max_length=200)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title, allow_unicode=True)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+
+
+class ServiceFeature(models.Model):
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='service_features')
+    title = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.service.title} - {self.title}"

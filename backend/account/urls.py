@@ -1,7 +1,11 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
 
 app_name = 'account'
+
+router = DefaultRouter()
+router.register(r'services', views.ServiceViewSet, basename='service')
 
 urlpatterns = [
     path('register/', views.RegisterAPIView.as_view(), name='register'),
@@ -16,4 +20,5 @@ urlpatterns = [
     path('change-phone_number/', views.PhoneNumberUpdateAPIView.as_view(), name='change_phone_number'),
     path('me/', views.UserMeAPIView.as_view(), name='user-me'),
     path('hero-sliders/', views.HeroSliderListView.as_view(), name='hero_slider_list'),
+    path('', include(router.urls)),
 ]

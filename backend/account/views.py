@@ -1,13 +1,13 @@
 from .serializers import UserRegisterSerializer, ProfileSerializer, UserCredentialsUpdateSerializer, \
     PasswordChangeSerializer, PhoneNumberUpdateSerializer, LoginSerializer, UserInfoSerializer, \
-    EmailVerificationSerializer, HeroSliderSerializer
+    EmailVerificationSerializer, HeroSliderSerializer, ServiceSerializer
 
 from .utils import get_tokens_for_user, set_auth_cookies, delete_auth_cookies, send_verification_email
-from .models import Profile, EmailVerification, HeroSlider
+from .models import Profile, EmailVerification, HeroSlider, Service
 from .permissions import IsNotAuthenticated
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers as drf_serializers
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import RetrieveUpdateAPIView, GenericAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -340,3 +340,10 @@ class HeroSliderListView(ListAPIView):
     queryset = HeroSlider.objects.filter(is_active=True)
     serializer_class = HeroSliderSerializer
     permission_classes = [AllowAny]
+
+
+class ServiceViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Service.objects.all()
+    serializer_class = ServiceSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'slug'

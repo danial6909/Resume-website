@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core import signing
 from rest_framework import serializers
-from .models import Profile, EmailVerification, HeroSlider
+from .models import Profile, EmailVerification, HeroSlider, ServiceFeature, Service
 from django.templatetags.static import static
 from django.core.exceptions import ValidationError as DjangoValidationError
 from drf_spectacular.utils import extend_schema_field
@@ -324,3 +324,20 @@ class HeroSliderSerializer(serializers.ModelSerializer):
                 return self.context['request'].build_absolute_uri(obj.image.url)
             return obj.image.url
         return None
+
+
+class ServiceFeatureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceFeature
+        fields = ['title']
+
+
+class ServiceSerializer(serializers.ModelSerializer):
+    features = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Service
+        fields = ['id', 'slug', 'title', 'description', 'full_description', 'icon_type', 'features']
+
+    def get_features(self, obj):
+        return obj.service_features.values_list('title', flat=True)

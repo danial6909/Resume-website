@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import CustomUser, HeroSlider
+from .models import CustomUser, HeroSlider, Service, ServiceFeature
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 
@@ -48,3 +48,15 @@ class HeroSliderAdmin(admin.ModelAdmin):
     list_display = ['title', 'order', 'is_active']
     list_editable = ['order', 'is_active']
     search_fields = ['title', 'description']
+
+
+class ServiceFeatureInline(admin.TabularInline):
+    model = ServiceFeature
+    extra = 1
+
+
+@admin.register(Service)
+class ServiceAdmin(admin.ModelAdmin):
+    list_display = ('title', 'slug', 'icon_type')
+    prepopulated_fields = {'slug': ('title',)}
+    inlines = [ServiceFeatureInline]
